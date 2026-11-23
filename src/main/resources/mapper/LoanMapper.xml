@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.LoanMapper">
+
+    <!-- loans.status: 1 신청 / 2 대출 중 / 4 반납 완료 -->
+
+    <!-- 빌릴 수 있는 실물 1권 찾기 -->
+    <select id="findAvailableCopyId" resultType="Long">
+        SELECT id FROM book_copies
+        WHERE book_id = #{bookId} AND status = 'AVAILABLE'
+        LIMIT 1
+    </select>
+
+    <!-- 대출 신청 기록 남기기 -->
+    <insert id="insertRequest">
+        INSERT INTO loans (member_id, copy_id)
+        VALUES (#{memberId}, #{copyId})
+    </insert>
+
+    <!-- 실물을 '신청됨'으로 -->
+    <update id="updateCopyReserved">
+        UPDATE book_copies SET status = 'RESERVED' WHERE id = #{copyId}
+    </update>
+
+    <!-- 관리자: 신청 들어온 목록 -->
+    <select id="findRequested" resultType="com.example.demo.entity.Loan">
+        SELECT loans.*, members.nickname, book_copies.barcode, book_copies.book_id, books.title
+        FROM loans
+        JOIN members     ON loans.member_id     = members.id
+        JOIN book_copies ON loans.copy_id       = book_copies.id
+        JOIN books       ON book_copies.book_id = books.id
+        WHERE loans.status = 1
+        ORDER BY loans.id ASC
+    </select>
+
+    <!-- 대출 1건 + 책 제목 -->
+    <select id="findById" resultType="com.example.demo.entity.Loan">
+        SELECT loans.*, books.title
+        FROM loans
+        JOIN book_copies ON loans.copy_id       = book_copies.id
+        JOIN books       ON book_copies.book_id = books.id
+        WHERE loans.id = #{id}
+    </select>
+
+    <!-- 대출 승인: 상태 2, 반납 기한 14일 뒤 -->
+    <update id="approve">
+        UPDATE loans
+        SET status = 2, loaned_at = NOW(), due_date = DATE_ADD(CURDATE(), INTERVAL 14 DAY)
+        WHERE id = #{id}
+    </update>
+
+    <!-- 실물을 '대출 중'으로 -->
+    <update id="updateCopyLoaned">
+        UPDATE book_copies SET status = 'LOANED' WHERE id = #{copyId}
+    </update>
+
+    <!-- 회원: 내 대출 목록 (신청·대출 중) -->
+    <select id="findMyLoans" resultType="com.example.demo.entity.Loan">
+        SELECT loans.*, book_copies.barcode, book_copies.book_id, books.title,
+        DATEDIFF(loans.due_date, CURDATE()) AS dday
+        FROM loans
+        JOIN book_copies ON loans.copy_id       = book_copies.id
+        JOIN books       ON book_copies.book_id = books.id
+        WHERE loans.member_id = #{memberId}
+        AND loans.status IN (1, 2)
+        ORDER BY loans.id DESC
+    </select>
+
+    <!-- 관리자: 대출 중 목록 -->
+    <select id="findLoaned" resultType="com.example.demo.entity.Loan">
+        SELECT loans.*, members.nickname, book_copies.barcode, book_copies.book_id, books.title,
+        DATEDIFF(loans.due_date, CURDATE()) AS dday
+        FROM loans
+        JOIN members     ON loans.member_id     = members.id
+        JOIN book_copies ON loans.copy_id       = book_copies.id
+        JOIN books       ON book_copies.book_id = books.id
+        WHERE loans.status = 2
+        ORDER BY loans.due_date ASC
+    </select>
+
+    <!-- 반납 처리: 상태 4 -->
+    <update id="returnLoan">
+        UPDATE loans SET status = 4, returned_at = NOW() WHERE id = #{id}
+    </update>
+
+    <!-- 실물을 다시 '빌릴 수 있음'으로 -->
+    <update id="updateCopyAvailable">
+        UPDATE book_copies SET status = 'AVAILABLE' WHERE id = #{copyId}
+    </update>
+
+    <!-- 회원이 빌리고 있거나 신청한 권수 -->
+    <select id="countActive" resultType="int">
+        SELECT COUNT(*) FROM loans
+        WHERE member_id = #{memberId} AND status IN (1, 2)
+    </select>
+
+    <!-- 이 회원이 이 책을 이미 신청했거나 빌리고 있나 -->
+    <select id="countSameBook" resultType="int">
+        SELECT COUNT(*) FROM loans
+        WHERE member_id = #{memberId}
+        AND status IN (1, 2)
+        AND copy_id IN (SELECT id FROM book_copies WHERE book_id = #{bookId})
+    </select>
+
+    <!-- 연체 반납 시: 대출 정지 -->
+    <update id="updateSuspended">
+        UPDATE members
+        SET suspended_until = DATE_ADD(CURDATE(), INTERVAL #{days} DAY)
+        WHERE id = #{memberId}
+    </update>
+
+    <!-- 정지 중인가 -->
+    <select id="countSuspended" resultType="int">
+        SELECT COUNT(*) FROM members
+        WHERE id = #{memberId} AND suspended_until >= CURDATE()
+    </select>
+
+    <!-- 연체 중인 책 수 -->
+    <select id="countOverdue" resultType="int">
+        SELECT COUNT(*) FROM loans
+        WHERE member_id = #{memberId} AND status = 2 AND CURDATE() > due_date
+    </select>
+
+    <!-- 회원: 대출 이력 (반납 완료) -->
+    <select id="findMyHistory" resultType="com.example.demo.entity.Loan">
+        SELECT loans.*, book_copies.barcode, book_copies.book_id, books.title
+        FROM loans
+        JOIN book_copies ON loans.copy_id       = book_copies.id
+        JOIN books       ON book_copies.book_id = books.id
+        WHERE loans.member_id = #{memberId} AND loans.status = 4
+        ORDER BY loans.returned_at DESC
+    </select>
+
+    <!-- 정지 끝나는 날 -->
+    <select id="findSuspendedUntil" resultType="java.time.LocalDate">
+        SELECT suspended_until FROM members
+        WHERE id = #{memberId} AND suspended_until >= CURDATE()
+    </select>
+
+    <!-- 반납 기한까지 #{days}일 남은 대출 (알림용) -->
+    <select id="findDueInDays" resultType="com.example.demo.entity.Loan">
+        SELECT * FROM loans
+        WHERE status = 2 AND DATEDIFF(due_date, CURDATE()) = #{days}
+    </select>
+
+    <!-- 책 제목만 -->
+    <select id="findBookTitle" resultType="String">
+        SELECT title FROM books WHERE id = #{bookId}
+    </select>
+
+    <!-- 대출 번호로 책 제목만 -->
+    <select id="findBookTitleByLoan" resultType="String">
+        SELECT books.title
+        FROM loans
+        JOIN book_copies ON loans.copy_id       = book_copies.id
+        JOIN books       ON book_copies.book_id = books.id
+        WHERE loans.id = #{loanId}
+    </select>
+
+    <!-- 대출 연장: 기한 +7일 -->
+    <update id="extend">
+        UPDATE loans
+        SET due_date = DATE_ADD(due_date, INTERVAL 7 DAY), extend_count = extend_count + 1
+        WHERE id = #{id}
+    </update>
+
+    <!-- 관리자: 이 책의 대출 이력 -->
+    <select id="findByBookId" resultType="com.example.demo.entity.Loan">
+        SELECT loans.*, members.nickname, book_copies.barcode
+        FROM loans
+        JOIN book_copies ON loans.copy_id   = book_copies.id
+        JOIN members     ON loans.member_id = members.id
+        WHERE book_copies.book_id = #{bookId}
+        ORDER BY loans.id DESC
+    </select>
+
+    <!-- 대출 신청 취소: 신청(1) 상태만 삭제 -->
+    <delete id="deleteRequest">
+        DELETE FROM loans WHERE id = #{id} AND status = 1
+    </delete>
+
+    <!-- 관리자: 오늘 반납된 책 (최근 반납이 위로) -->
+    <select id="findReturnedToday" resultType="com.example.demo.entity.Loan">
+        SELECT loans.*, members.nickname, book_copies.barcode, book_copies.book_id, books.title
+        FROM loans
+        JOIN members     ON loans.member_id     = members.id
+        JOIN book_copies ON loans.copy_id       = book_copies.id
+        JOIN books       ON book_copies.book_id = books.id
+        WHERE loans.status = 4
+        AND DATE(loans.returned_at) = CURDATE()
+        ORDER BY loans.returned_at DESC
+    </select>
+
+    <!-- 이 실물을 지금 빌려 간 대출 (대출 중인 것) -->
+    <select id="findLoanedByCopyId" resultType="com.example.demo.entity.Loan">
+        SELECT * FROM loans WHERE copy_id = #{copyId} AND status = 2
+    </select>
+
+    <!-- 대출을 '분실(5)'로 끝내기 -->
+    <update id="markLost">
+        UPDATE loans SET status = 5 WHERE id = #{id}
+    </update>
+</mapper>

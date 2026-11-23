@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{adminMember.pageTitle}">회원 관리 - 관리자</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="admin-box">
+
+    <!-- 제목 -->
+    <div class="admin-top">
+        <h2>
+            <span th:text="#{adminMember.title}">회원 관리</span>
+            <span class="sub" th:text="#{book.totalPre} + ' ' + ${total} + #{admin.personUnit}"></span>
+        </h2>
+    </div>
+
+    <!-- 검색창 -->
+    <form action="/admin/members" method="get" class="admin-search">
+        <input type="text" name="keyword" th:value="${keyword}"
+               th:placeholder="#{adminMember.placeholder}">
+        <button type="submit" th:text="#{common.search}">검색</button>
+    </form>
+
+    <table class="member-table">
+        <thead>
+        <tr>
+            <th th:text="#{admin.col.num}">번호</th>
+            <th th:text="#{adminMember.colEmail}">이메일</th>
+            <th th:text="#{adminMember.colNickname}">닉네임</th>
+            <th th:text="#{adminMember.colRole}">권한</th>
+            <th th:text="#{adminMember.colJoined}">가입일</th>
+            <th th:text="#{adminMember.colLoaning}">대출 중</th>
+            <th th:text="#{adminMember.colOverdue}">연체</th>
+            <th th:text="#{admin.col.status}">상태</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="m : ${members}">
+            <td th:text="${m.id}"></td>
+            <td th:text="${m.email}"></td>
+            <td><a th:href="@{/admin/members/{id}(id=${m.id})}" th:text="${m.nickname}"></a></td>
+            <td>
+                <span th:if="${m.isAdmin()}" class="status admin" th:text="#{adminMember.roleAdmin}">관리자</span>
+                <span th:unless="${m.isAdmin()}" th:text="#{adminMember.roleUser}">회원</span>
+            </td>
+            <td th:text="${m.createdAt != null} ? ${#temporals.format(m.createdAt, 'yyyy.MM.dd')} : '-'"></td>
+
+            <!-- 대출 중: 누르면 회원 상세 (📗 2권 / 📗 2冊) -->
+            <td>
+                <a th:if="${m.loanCount > 0}"
+                   th:href="@{/admin/members/{id}(id=${m.id})}"
+                   class="status loan"
+                   th:text="'📗 ' + ${m.loanCount} + #{admin.unit}"></a>
+                <span th:unless="${m.loanCount > 0}" class="none">-</span>
+            </td>
+
+            <!-- 연체: 누르면 회원 상세 -->
+            <td>
+                <a th:if="${m.overdueCount > 0}"
+                   th:href="@{/admin/members/{id}(id=${m.id})}"
+                   class="status stop"
+                   th:text="'📕 ' + ${m.overdueCount} + #{admin.unit}"></a>
+                <span th:unless="${m.overdueCount > 0}" class="none">-</span>
+            </td>
+
+            <!-- 상태: 탈퇴 / 정지 / 정상 -->
+            <td>
+                <span th:if="${m.isWithdrawn()}" class="status out" th:text="#{adminMember.withdrawn}">탈퇴</span>
+                <span th:if="${m.isSuspended()}" class="status stop"
+                      th:text="#{adminMember.suspended} + ' ~' + ${#temporals.format(m.suspendedUntil, 'MM.dd')}"></span>
+                <span th:if="${!m.isWithdrawn() and !m.isSuspended()}" class="status ok"
+                      th:text="#{adminMember.ok}">정상</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- 검색 결과가 없을 때 -->
+    <p class="empty" th:if="${members.isEmpty()}">
+        "<span th:text="${keyword}"></span>"
+        <th:block th:text="#{adminBook.noResult}">검색 결과가 없습니다.</th:block>
+        <a href="/admin/members" th:text="#{adminBook.viewAll}">전체 목록 보기</a>
+    </p>
+
+    <!-- 페이지 번호: 검색어도 같이 넘김 -->
+    <div class="paging" th:if="${totalPages > 1}">
+        <a th:each="i : ${#numbers.sequence(1, totalPages)}"
+           th:href="@{/admin/members(keyword=${keyword}, page=${i})}"
+           th:text="${i}"
+           th:classappend="${i == page} ? 'active'"></a>
+    </div>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

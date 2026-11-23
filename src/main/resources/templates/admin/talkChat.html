@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{adminTalkChat.pageTitle}">톡톡 답변 - 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/adminTalk.css}">
+  <script th:src="@{/js/adminTalk.js}" defer></script>
+</head>
+<body>
+
+<div class="top" th:text="#{adminTalkChat.top}">💬 톡톡 답변 (관리자)</div>
+
+<!-- data-member-name: adminTalk.js가 새 말풍선을 만들 때 쓸 이름 (언어 따라 바뀜) -->
+<div class="chat" id="chat" th:data-member-name="#{adminTalkChat.memberName}">
+  <div th:each="m : ${messages}">
+
+    <!-- 도서관(나)이 보낸 것: 오른쪽 -->
+    <div class="row me" th:if="${m.fromAdmin}">
+      <span class="time" th:text="${#temporals.format(m.createdAt, 'a h:mm')}"></span>
+      <div class="bubble" th:text="${m.content}"></div>
+    </div>
+
+    <!-- 회원이 보낸 것: 왼쪽 -->
+    <div class="row other" th:unless="${m.fromAdmin}">
+      <div>
+        <div class="name" th:text="#{adminTalkChat.memberName}">👤 회원</div>
+        <div class="bubble" th:text="${m.content}"></div>
+      </div>
+      <span class="time" th:text="${#temporals.format(m.createdAt, 'a h:mm')}"></span>
+    </div>
+
+  </div>
+</div>
+
+<form class="input" id="talkForm" th:data-member-id="${memberId}">
+  <input type="text" id="content" th:placeholder="#{adminTalkChat.placeholder}"
+         maxlength="500" autocomplete="off" autofocus>
+  <button type="submit" th:text="#{adminTalkChat.send}">보내기</button>
+</form>
+
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{boardForm.editPageTitle}">글 수정 - PZM 도서관</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/boardwrite.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="write-box">
+
+  <h2 class="write-title" th:text="#{boardForm.editTitle}">글 수정</h2>
+
+  <!-- 저장 주소: /board/edit/글번호 -->
+  <form th:action="@{'/board/edit/' + ${post.id}}" method="post">
+
+    <!-- 제목: 기존 제목 미리 채우기 -->
+    <div class="write-row">
+      <input type="text" name="title" class="title-input"
+             th:value="${post.title}"
+             th:placeholder="#{boardForm.titlePlaceholder}" maxlength="255" required>
+    </div>
+
+    <!-- 첨부된 이미지 + 삭제 체크박스 -->
+    <div class="edit-images" th:if="${images != null and !images.isEmpty()}">
+      <p class="image-label">
+        <th:block th:text="#{boardForm.attached}">첨부된 이미지</th:block>
+        <small th:text="#{boardForm.attachedHint}">(지울 이미지를 체크하세요)</small>
+      </p>
+      <div class="edit-images-list">
+
+        <!-- img = PostImage (번호 id + 파일 이름 filePath) -->
+        <label th:each="img : ${images}"
+               style="display:inline-block; text-align:center; margin-right:10px;">
+          <img th:src="@{'/upload/' + ${img.filePath}}" th:alt="#{boardForm.imageAlt}">
+          <br>
+          <!-- 체크하면 이 이미지 번호가 deleteImageIds로 서버에 감 -->
+          <input type="checkbox" name="deleteImageIds" th:value="${img.id}">
+          <th:block th:text="#{boardForm.deleteImage}">삭제</th:block>
+        </label>
+
+      </div>
+    </div>
+
+    <!-- 내용: 기존 내용 미리 채우기 -->
+    <textarea name="content" class="content-input" required
+              th:text="${post.content}"
+              th:placeholder="#{boardForm.contentPlaceholder}"></textarea>
+
+    <!-- 버튼 -->
+    <div class="write-buttons">
+      <button type="submit" class="btn btn-blue" th:text="#{boardForm.editSubmit}">수정 완료</button>
+      <a th:href="@{'/board/' + ${post.id}}" class="btn btn-dark" th:text="#{boardForm.cancel}">취소</a>
+    </div>
+  </form>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

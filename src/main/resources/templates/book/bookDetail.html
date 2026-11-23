@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${book.title} + ' - ' + #{common.siteName}">도서 상세</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/book.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="detail-box">
+    <div class="loan-msg" th:if="${message}" th:text="${message}"></div>
+
+    <!-- 위쪽: 표지 + 기본 정보 -->
+    <div class="detail-top">
+
+        <!-- 표지 -->
+        <img class="detail-cover"
+             th:if="${book.coverUrl != null and book.coverUrl != ''}"
+             th:src="${book.coverUrl}" th:alt="#{book.coverAlt}">
+        <div class="detail-cover no-cover"
+             th:unless="${book.coverUrl != null and book.coverUrl != ''}"
+             th:text="#{common.noCover}">표지 없음</div>
+
+        <!-- 책 정보 (데이터는 번역 안 함) -->
+        <div class="detail-info">
+            <h2 th:text="${book.title}"></h2>
+            <p><b th:text="#{bookDetail.author}">저자</b> <span th:text="${book.authors}"></span></p>
+            <p><b th:text="#{bookDetail.publisher}">출판사</b> <span th:text="${book.publisher}"></span></p>
+            <p><b>ISBN</b> <span th:text="${book.isbn}"></span></p>
+
+            <!-- 대출 가능 여부: 📗 대출 가능 2권 / 전체 3권 -->
+            <div class="stock" th:if="${availableCount > 0}">
+                <span th:text="#{bookDetail.available}">📗 대출 가능</span>
+                <b th:text="${availableCount}"></b><span th:text="#{bookDetail.unit}">권</span>
+                /
+                <span th:text="#{bookDetail.total}">전체</span>
+                <span th:text="${totalCount}"></span><span th:text="#{bookDetail.unit}">권</span>
+            </div>
+
+            <!-- 대출 신청 버튼 -->
+            <div class="loan-area">
+
+                <!-- 로그인 O + 남은 책 있음 → 신청 버튼 -->
+                <form th:if="${loginMember != null and availableCount > 0}"
+                      th:action="@{/books/{id}/loan(id=${book.id})}" method="post">
+                    <button type="submit" class="loan-btn"
+                            th:data-confirm="#{bookDetail.loanConfirm}"
+                            onclick="return confirm(this.dataset.confirm)"
+                            th:text="#{bookDetail.loanBtn}">대출 신청</button>
+                </form>
+
+                <!-- 로그인 X → 로그인 안내 -->
+                <a th:if="${loginMember == null}" href="/loginpage" class="loan-btn login"
+                   th:text="#{bookDetail.loginToLoan}">로그인하고 대출 신청하기</a>
+
+                <!-- 로그인 O + 남은 책 없음 → 회색 버튼 -->
+                <button th:if="${loginMember != null and availableCount == 0}"
+                        class="loan-btn disabled" disabled
+                        th:text="#{bookDetail.unavailable}">대출 불가</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 아래쪽: 책 소개 (소개 글은 데이터라서 번역 안 함) -->
+    <div class="detail-desc">
+        <h3 th:text="#{bookDetail.intro}">책 소개</h3>
+        <p th:if="${book.description != null and book.description != ''}"
+           th:text="${book.description} + '...'"></p>
+        <p th:unless="${book.description != null and book.description != ''}"
+           class="empty" th:text="#{bookDetail.noIntro}">등록된 소개가 없습니다.</p>
+
+        <!-- 더 보기 링크 (url 있을 때만) -->
+        <a th:if="${book.url != null and book.url != ''}"
+           th:href="${book.url}" target="_blank" class="more-link"
+           th:text="#{bookDetail.more}">책 정보 더 보기 →</a>
+    </div>
+
+    <!-- 목록으로 -->
+    <div class="detail-bottom">
+        <a href="/books" class="back-btn" th:text="#{bookDetail.back}">목록으로</a>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

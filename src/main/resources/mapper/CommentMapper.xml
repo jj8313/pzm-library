@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.CommentMapper">
+
+    <!-- 이 글의 댓글 목록 (오래된 순) — 원래 댓글 + 답글 전부 (comments.*에 parent_id 포함) -->
+    <select id="findComments" resultType="com.example.demo.entity.Comment">
+        SELECT comments.*, members.nickname
+        FROM comments
+        JOIN members ON comments.member_id = members.id
+        WHERE comments.post_id = #{postId}
+        ORDER BY comments.id ASC
+    </select>
+
+    <!-- 원래 댓글 저장 (그대로) -->
+    <insert id="insertComment">
+        INSERT INTO comments (post_id, member_id, content)
+        VALUES (#{postId}, #{memberId}, #{content})
+    </insert>
+
+    <!-- ★ 답글 저장 (parent_id = 어느 댓글에 단 답글인지) -->
+    <insert id="insertReply">
+        INSERT INTO comments (post_id, parent_id, member_id, content)
+        VALUES (#{postId}, #{parentId}, #{memberId}, #{content})
+    </insert>
+
+    <!-- 댓글 하나 -->
+    <select id="findCommentById" resultType="com.example.demo.entity.Comment">
+        SELECT * FROM comments WHERE id = #{id}
+    </select>
+
+    <!-- 댓글 수정 (원래 댓글, 답글 둘 다) -->
+    <update id="updateComment">
+        UPDATE comments
+        SET content = #{content}
+        WHERE id = #{id}
+    </update>
+
+    <!-- ★ 이 댓글에 달린 답글들 삭제 (원래 댓글 지우기 전에) -->
+    <delete id="deleteReplies">
+        DELETE FROM comments WHERE parent_id = #{id}
+    </delete>
+
+    <!-- 댓글 하나 삭제 (그대로) -->
+    <delete id="deleteComment">
+        DELETE FROM comments WHERE id = #{id}
+    </delete>
+
+</mapper>

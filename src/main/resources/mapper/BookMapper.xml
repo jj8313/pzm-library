@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.BookMapper">
+
+    <!-- ISBN으로 책 찾기 (이미 등록됐는지 확인용) -->
+    <select id="findByIsbn" resultType="com.example.demo.entity.Book">
+        SELECT * FROM books WHERE isbn = #{isbn}
+    </select>
+
+    <!-- 책 정보 저장 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO books (isbn, title, authors, publisher, cover_url, description, url)
+        VALUES (#{isbn}, #{title}, #{authors}, #{publisher}, #{coverUrl}, #{description}, #{url})
+    </insert>
+
+    <!-- 이 책 실물이 몇 권 있나 (분실은 빼고) -->
+    <select id="countCopies" resultType="int">
+        SELECT COUNT(*) FROM book_copies
+        WHERE book_id = #{bookId} AND status != 'LOST'
+    </select>
+
+    <!-- 실물 한 권 저장 -->
+    <insert id="insertCopy">
+        INSERT INTO book_copies (book_id, barcode)
+        VALUES (#{bookId}, #{barcode})
+    </insert>
+
+    <!-- 책 목록 + 검색 (10개씩) - 제목은 띄어쓰기 무시 -->
+    <select id="findAll" resultType="com.example.demo.entity.Book">
+        SELECT * FROM books
+        WHERE REPLACE(title, ' ', '') LIKE CONCAT('%', REPLACE(#{keyword}, ' ', ''), '%')
+        OR authors   LIKE CONCAT('%', #{keyword}, '%')
+        OR publisher LIKE CONCAT('%', #{keyword}, '%')
+        OR isbn      LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY id DESC
+        LIMIT 10 OFFSET #{offset}
+    </select>
+
+    <!-- id로 책 1권 찾기 (상세 화면용) -->
+    <select id="findById" resultType="com.example.demo.entity.Book">
+        SELECT * FROM books WHERE id = #{id}
+    </select>
+
+    <!-- 지금 빌릴 수 있는 권수 -->
+    <select id="countAvailable" resultType="int">
+        SELECT COUNT(*) FROM book_copies
+        WHERE book_id = #{bookId} AND status = 'AVAILABLE'
+    </select>
+
+    <!-- 검색 결과 전체 개수 (findAll과 WHERE 똑같이) -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM books
+        WHERE REPLACE(title, ' ', '') LIKE CONCAT('%', REPLACE(#{keyword}, ' ', ''), '%')
+        OR authors   LIKE CONCAT('%', #{keyword}, '%')
+        OR publisher LIKE CONCAT('%', #{keyword}, '%')
+        OR isbn      LIKE CONCAT('%', #{keyword}, '%')
+    </select>
+
+    <!-- 메인 화면: 새로 들어온 책 10권 (최근 등록 순) -->
+    <select id="findNewBooks" resultType="com.example.demo.entity.Book">
+        SELECT * FROM books ORDER BY id DESC LIMIT 10
+    </select>
+
+    <!-- 관리자: 이 책의 실물 목록 -->
+    <select id="findCopiesByBookId" resultType="com.example.demo.entity.BookCopy">
+        SELECT * FROM book_copies WHERE book_id = #{bookId} ORDER BY id
+    </select>
+
+    <!-- 관리자: 실물 1권 -->
+    <select id="findCopyById" resultType="com.example.demo.entity.BookCopy">
+        SELECT * FROM book_copies WHERE id = #{id}
+    </select>
+
+    <!-- 관리자: 실물을 '분실'로 -->
+    <update id="updateCopyLost">
+        UPDATE book_copies SET status = 'LOST' WHERE id = #{id}
+    </update>
+</mapper>

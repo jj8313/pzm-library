@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{adminDash.pageTitle}">관리자 대시보드 - 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="admin-box">
+  <h2 th:text="#{adminDash.title}">📊 관리자 대시보드</h2>
+
+  <div class="dash-grid">
+
+    <a class="dash-card" th:href="@{/admin/loans}">
+      <div class="dash-label" th:text="#{adminDash.waiting}">📝 승인 대기</div>
+      <div class="dash-num">
+        <span th:text="${requestedCount}">0</span><th:block th:text="#{admin.countUnit}">건</th:block>
+      </div>
+    </a>
+
+    <a class="dash-card" th:href="@{/admin/loans}">
+      <div class="dash-label" th:text="#{admin.st.loaned}">📗 대출 중</div>
+      <div class="dash-num">
+        <span th:text="${loanedCount}">0</span><th:block th:text="#{admin.countUnit}">건</th:block>
+      </div>
+    </a>
+
+    <a class="dash-card dash-red" th:href="@{/admin/loans}">
+      <div class="dash-label" th:text="#{admin.st.overdue}">📕 연체</div>
+      <div class="dash-num">
+        <span th:text="${overdueCount}">0</span><th:block th:text="#{admin.countUnit}">건</th:block>
+      </div>
+    </a>
+
+    <a class="dash-card" th:href="@{/admin/loans}">
+      <div class="dash-label" th:text="#{adminDash.returnedToday}">📥 오늘 반납</div>
+      <div class="dash-num">
+        <span th:text="${returnedTodayCount}">0</span><th:block th:text="#{admin.unit}">권</th:block>
+      </div>
+    </a>
+
+    <a class="dash-card" th:href="@{/admin/books/lost}">
+      <div class="dash-label" th:text="#{adminBook.lostBtn}">❌ 분실 도서</div>
+      <div class="dash-num">
+        <span th:text="${lostCount}">0</span><th:block th:text="#{admin.unit}">권</th:block>
+      </div>
+    </a>
+
+    <a class="dash-card" th:href="@{/admin/members}">
+      <div class="dash-label" th:text="#{adminDash.members}">👤 전체 회원</div>
+      <div class="dash-num">
+        <span th:text="${memberCount}">0</span><th:block th:text="#{admin.personUnit}">명</th:block>
+      </div>
+    </a>
+
+  </div>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

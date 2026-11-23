@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{loanHistory.pageTitle}">대출 이력 - PZM 도서관</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="admin-box">
+
+    <h2>
+        <span th:text="#{loanHistory.title}">대출 이력</span>
+        <span class="sub" th:text="#{myloans.totalPre} + ' ' + ${loans.size()} + #{loanHistory.totalUnit}"></span>
+    </h2>
+    <p style="margin-bottom: 16px;">
+        <a href="/mypage/loans" th:text="#{loanHistory.current}">← 지금 빌린 책 보기</a>
+    </p>
+
+    <table class="loan-table">
+        <tr>
+            <th th:text="#{myloans.colBook}">책</th>
+            <th th:text="#{myloans.colBarcode}">바코드</th>
+            <th th:text="#{loanHistory.colRequested}">신청한 날</th>
+            <th th:text="#{loanHistory.colLoaned}">빌린 날</th>
+            <th th:text="#{myloans.colDueDate}">반납 기한</th>
+            <th th:text="#{loanHistory.colReturned}">반납한 날</th>
+            <th th:text="#{myloans.colStatus}">상태</th>
+        </tr>
+
+        <tr th:each="loan : ${loans}">
+            <td><a th:href="@{/books/{id}(id=${loan.bookId})}" th:text="${loan.title}"></a></td>
+            <td th:text="${loan.barcode}"></td>
+            <td th:text="${#temporals.format(loan.requestedAt, 'yyyy.MM.dd')}"></td>
+            <td th:text="${#temporals.format(loan.loanedAt, 'yyyy.MM.dd')}"></td>
+            <td th:text="${#temporals.format(loan.dueDate, 'yyyy.MM.dd')}"></td>
+
+            <!-- 반납한 날: 분실이면 없으니까 - -->
+            <td th:text="${loan.returnedAt != null} ? ${#temporals.format(loan.returnedAt, 'yyyy.MM.dd')} : '-'"></td>
+
+            <!-- 상태: 반납 완료 / 늦게 반납 / 분실 -->
+            <td>
+                <span th:if="${loan.status == 4 and !loan.isLateReturned()}"
+                      th:text="#{loanHistory.returned}">✅ 반납 완료</span>
+                <span th:if="${loan.isLateReturned()}" style="color:red; font-weight:bold;"
+                      th:text="#{loanHistory.late}">⚠️ 늦게 반납</span>
+                <span th:if="${loan.isLost()}" style="color:#999; font-weight:bold;"
+                      th:text="#{loanHistory.lost}">❌ 분실</span>
+            </td>
+        </tr>
+
+        <tr th:if="${loans.isEmpty()}">
+            <td colspan="7" class="empty" th:text="#{loanHistory.empty}">아직 대출 기록이 없습니다.</td>
+        </tr>
+    </table>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

@@ -1,0 +1,83 @@
+/* ===== 공통 레이아웃 ===== */
+.mypage-wrap {
+    max-width: 800px;
+    margin: 40px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.page-title {
+    margin: 0;
+    font-size: 22px;
+    color: #2c3e50;
+}
+
+.my-box {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 24px 28px;
+}
+
+.box-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #eee;
+}
+
+.box-head h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.small-btn {
+    padding: 6px 14px;
+    font-size: 13px;
+    color: #555;
+    background: #f4f6f8;
+    border: 1px solid #dde1e5;
+    text-decoration: none;
+}
+
+.small-btn:hover {
+    background: #e9ecef;
+}
+
+/* ===== 마이페이지: 내 정보 ===== */
+.info-list {
+    margin: 0;
+}
+
+.info-row {
+    display: flex;
+    padding: 14px 0;
+    border-bottom: 1px solid #f3f3f3;
+    font-size: 14px;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-row dt {
+    width: 100px;
+    color: #888;
+}
+
+.info-row dd {
+    margin: 0;
+    color: #333;
+}
+
+.empty {
+    margin: 20px 0 0;
+
+    /* ===== 정보 수정 ===== */
+    .edit-form {
+        display: flex;
+        flex-direction: column;
+    }

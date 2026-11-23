@@ -1,0 +1,70 @@
+/* 정보 수정 화면 */
+.edit-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.edit-form label {
+    margin: 16px 0 6px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #444;
+}
+
+.edit-form input {
+    padding: 12px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+    outline: none;
+}
+
+.edit-form input:focus {
+    border-color: #3498db;
+}
+
+.edit-form input[readonly] {
+    background-color: #f0f0f0;
+    color: #888;
+}
+
+.edit-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 28px;
+}
+
+.btn-save,
+.btn-cancel {
+    min-width: 100px;
+    padding: 12px 24px;
+    font-size: 14px;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.btn-save {
+    background-color: #3498db;
+    color: white;
+}
+
+.btn-save:hover {
+    background-color: #2980b9;
+}
+
+.btn-cancel {
+    background-color: #eee;
+    color: #333;
+}
+
+.error {
+    margin: 0 0 8px;
+    color: #e74c3c;
+    font-size: 14px;
+    text-align: center;
+}

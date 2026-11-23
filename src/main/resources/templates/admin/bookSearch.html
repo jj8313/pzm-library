@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{adminSearch.pageTitle}">도서 등록 - 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="admin-box">
+  <h2>
+    <span th:text="#{adminSearch.title}">도서 등록</span>
+    <span class="sub" th:text="#{adminSearch.sub}">카카오 책 검색</span>
+  </h2>
+
+  <!-- 등록 완료 메시지 (등록 직후 한 번만 보임) → 6단계에서 다국어 -->
+  <p class="success-msg" th:if="${message}" th:text="${message}"></p>
+
+  <!-- ===== 검색창 ===== -->
+  <form class="admin-search" action="/admin/books" method="get">
+    <input type="text" name="query" th:value="${query}"
+           th:placeholder="#{adminSearch.placeholder}" required>
+    <button type="submit" th:text="#{common.search}">검색</button>
+  </form>
+
+  <!-- ===== 검색 결과 ===== -->
+  <ul class="book-results">
+
+    <!-- 책 한 권씩 반복 -->
+    <li class="book-row" th:each="book : ${books}">
+
+      <!-- 표지 (없으면 회색 칸) -->
+      <img class="cover"
+           th:if="${book.thumbnail != null and book.thumbnail != ''}"
+           th:src="${book.thumbnail}" th:alt="#{book.coverAlt}">
+      <div class="cover no-cover"
+           th:unless="${book.thumbnail != null and book.thumbnail != ''}"
+           th:text="#{common.noCover}">표지 없음</div>
+
+      <!-- 책 정보 (카카오 데이터라서 번역 안 함) -->
+      <div class="info">
+        <h3 th:text="${book.title}"></h3>
+        <p>
+          <span th:text="${book.authorsText}"></span> ·
+          <span th:text="${book.publisher}"></span>
+        </p>
+        <p class="isbn" th:text="'ISBN ' + ${book.isbn13}"></p>
+      </div>
+
+      <!-- 등록 -->
+      <form class="register" action="/admin/books/register" method="post">
+        <!-- 책 정보 (화면엔 안 보이고 서버로 같이 감) -->
+        <input type="hidden" name="isbn"        th:value="${book.isbn13}">
+        <input type="hidden" name="title"       th:value="${book.title}">
+        <input type="hidden" name="authors"     th:value="${book.authorsText}">
+        <input type="hidden" name="publisher"   th:value="${book.publisher}">
+        <input type="hidden" name="coverUrl"    th:value="${book.thumbnail}">
+        <input type="hidden" name="description" th:value="${book.contents}">
+        <input type="hidden" name="url"         th:value="${book.url}">
+        <!-- 등록 후 원래 검색 결과 + 원래 페이지로 돌아오려고 -->
+        <input type="hidden" name="query" th:value="${query}">
+        <input type="hidden" name="page"  th:value="${page}">
+
+        <!-- 권수 -->
+        <input type="number" name="quantity" value="1" min="1" max="20">
+        <th:block th:text="#{admin.unit}">권</th:block>
+        <button type="submit" th:text="#{adminSearch.register}">등록</button>
+      </form>
+    </li>
+
+    <!-- 검색했는데 결과 없을 때 -->
+    <li class="empty" th:if="${query != '' and #lists.isEmpty(books)}"
+        th:text="#{adminSearch.noResult}">검색 결과가 없습니다.</li>
+
+    <!-- 처음 들어왔을 때 -->
+    <li class="empty" th:if="${query == ''}"
+        th:text="#{adminSearch.start}">등록할 책을 검색해 주세요.</li>
+  </ul>
+
+  <!-- 이전 / 다음 (검색 결과가 있을 때만) -->
+  <div class="paging" th:if="${!#lists.isEmpty(books)}">
+    <!-- 1페이지면 이전 버튼 숨김 -->
+    <a th:if="${page > 1}"
+       th:href="@{/admin/books(query=${query}, page=${page - 1})}"
+       th:text="#{adminSearch.prev}">◀ 이전</a>
+
+    <!-- 2 페이지 / 2 ページ -->
+    <span th:text="${page} + ' ' + #{adminSearch.page}"></span>
+
+    <!-- 10권 꽉 찼으면 다음이 있다고 보고 버튼 보여줌 -->
+    <a th:if="${books.size() == 10}"
+       th:href="@{/admin/books(query=${query}, page=${page + 1})}"
+       th:text="#{adminSearch.next}">다음 ▶</a>
+  </div>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

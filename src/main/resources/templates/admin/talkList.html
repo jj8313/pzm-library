@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{adminTalk.pageTitle}">톡톡 문의 - 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="admin-box">
+  <h2>
+    <span th:text="#{adminTalk.title}">💬 톡톡 문의</span>
+    <span class="sub" th:text="#{book.totalPre} + ' ' + ${talks.size()} + #{admin.personUnit}"></span>
+  </h2>
+
+  <table class="loan-table">
+    <tr>
+      <th th:text="#{admin.col.member}">회원</th>
+      <th th:text="#{adminTalk.colLast}">마지막 메시지</th>
+      <th th:text="#{admin.col.status}">상태</th>
+      <th th:text="#{adminTalk.colTime}">시간</th>
+      <th></th>
+    </tr>
+
+    <tr th:each="t : ${talks}">
+      <td th:text="${t.nickname}"></td>
+
+      <!-- 도서관이 마지막에 말했으면 앞에 "도서관:" 붙이기 (내용은 데이터라 번역 안 함) -->
+      <td th:text="${t.fromAdmin} ? #{adminTalk.libraryPrefix} + ' ' + ${t.content} : ${t.content}"></td>
+
+      <!-- 마지막 말이 회원 것이면 = 아직 답장 안 함 -->
+      <td>
+        <span th:unless="${t.fromAdmin}" style="color:red; font-weight:bold;"
+              th:text="#{adminTalk.needReply}">🔴 답변 필요</span>
+        <span th:if="${t.fromAdmin}" th:text="#{adminTalk.replied}">✅ 답변함</span>
+      </td>
+
+      <td th:text="${#temporals.format(t.createdAt, 'MM.dd HH:mm')}"></td>
+
+      <!-- 회원 쪽처럼 새 창으로 열기 -->
+      <td>
+        <button type="button" class="approve-btn"
+                th:onclick="|window.open('/admin/talk/${t.memberId}', 'talk${t.memberId}', 'width=420,height=650')|"
+                th:text="#{adminTalk.open}">열기</button>
+      </td>
+    </tr>
+
+    <tr th:if="${talks.isEmpty()}">
+      <td colspan="5" class="empty" th:text="#{adminTalk.empty}">아직 문의가 없습니다.</td>
+    </tr>
+  </table>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

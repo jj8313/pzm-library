@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>대출 이력 - 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+  <script th:src="@{/js/lost.js}"></script>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="admin-box">
+
+  <!-- 분실 처리 결과 메시지 -->
+  <div class="success-msg" th:if="${message}" th:text="${message}"></div>
+
+  <h2>📖 <span th:text="${book.title}"></span></h2>
+  <p style="margin-bottom:16px;"><a href="/admin/books/list">← 등록된 도서로</a></p>
+
+  <!-- ===== 1. 실물 책 ===== -->
+  <h3 style="margin: 0 0 10px; color:#2c3e50;">
+    📦 실물 책 <span style="font-size:14px; color:#999;" th:text="${copies.size()} + '권'"></span>
+  </h3>
+
+  <table class="loan-table">
+    <tr>
+      <th style="width:120px;">바코드</th>
+      <th>상태</th>
+      <th style="width:100px;"></th>
+    </tr>
+
+    <tr th:each="copy : ${copies}">
+      <td th:text="${copy.barcode}"></td>
+
+      <!-- 상태 -->
+      <td>
+        <span th:if="${copy.isAvailable()}">📗 대출 가능</span>
+        <span th:if="${copy.isReserved()}">⏳ 신청됨</span>
+        <span th:if="${copy.isLoaned()}">📙 대출 중</span>
+        <span th:if="${copy.isLost()}" style="color:#999;">❌ 분실</span>
+      </td>
+
+      <!-- 분실 처리: 대출 가능 or 대출 중일 때만 (누르면 사유 입력 창이 뜸) -->
+      <td>
+        <form th:if="${copy.isAvailable() or copy.isLoaned()}"
+              th:action="@{/admin/books/{bookId}/copies/{copyId}/lost(bookId=${book.id}, copyId=${copy.id})}"
+              method="post" class="lost-form">
+          <input type="hidden" name="reason">
+          <button type="submit" class="return-btn" style="background:#c0392b;">분실 처리</button>
+        </form>
+      </td>
+    </tr>
+  </table>
+
+  <!-- ===== 2. 대출 이력 ===== -->
+  <h3 style="margin: 40px 0 10px; color:#2c3e50;">
+    📜 대출 이력 <span style="font-size:14px; color:#999;" th:text="${loans.size()} + '건'"></span>
+  </h3>
+
+  <table class="loan-table">
+    <tr>
+      <th>번호</th>
+      <th>회원</th>
+      <th>바코드</th>
+      <th>신청</th>
+      <th>대출</th>
+      <th>반납 기한</th>
+      <th>반납</th>
+      <th>상태</th>
+    </tr>
+
+    <tr th:each="loan : ${loans}">
+      <td th:text="${loan.id}"></td>
+      <td><a th:href="@{/admin/members/{id}(id=${loan.memberId})}" th:text="${loan.nickname}"></a></td>
+      <td th:text="${loan.barcode}"></td>
+
+      <td th:text="${loan.requestedAt != null} ? ${#temporals.format(loan.requestedAt, 'MM.dd HH:mm')} : '-'"></td>
+      <td th:text="${loan.loanedAt != null} ? ${#temporals.format(loan.loanedAt, 'MM.dd HH:mm')} : '-'"></td>
+      <td>
+        <span th:text="${loan.dueDate != null} ? ${#temporals.format(loan.dueDate, 'MM.dd')} : '-'"></span>
+        <span th:if="${loan.extendCount != null and loan.extendCount > 0}" title="연장함">🔁</span>
+      </td>
+      <td th:text="${loan.returnedAt != null} ? ${#temporals.format(loan.returnedAt, 'MM.dd HH:mm')} : '-'"></td>
+
+      <!-- 상태 -->
+      <td>
+        <span th:if="${loan.isRequested()}">⏳ 신청</span>
+        <span th:if="${loan.isLoaned() and !loan.isOverdue()}">📗 대출 중</span>
+        <span th:if="${loan.isOverdue()}" style="color:#c0392b; font-weight:bold;">📕 연체</span>
+        <span th:if="${loan.status == 4 and !loan.isLateReturned()}">✅ 반납 완료</span>
+        <span th:if="${loan.isLateReturned()}" style="color:#e67e22; font-weight:bold;">⚠️ 늦게 반납</span>
+        <span th:if="${loan.isLost()}" style="color:#999; font-weight:bold;">❌ 분실</span>
+      </td>
+    </tr>
+
+    <tr th:if="${loans.isEmpty()}">
+      <td colspan="8" class="empty">아직 대출 기록이 없습니다.</td>
+    </tr>
+  </table>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

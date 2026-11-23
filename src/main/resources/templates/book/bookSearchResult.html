@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{book.searchPageTitle}">도서 검색 - PZM 도서관</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="admin-box">
+
+  <h2>
+    <span th:text="#{book.searchTitle}">도서 검색</span>
+    <span class="sub" th:text="#{book.totalPre} + ' ' + ${total} + #{book.totalUnit}">총 0종</span>
+  </h2>
+
+  <!-- 검색창 -->
+  <form action="/books" method="get" class="admin-search">
+    <input type="text" name="keyword" th:value="${keyword}"
+           th:placeholder="#{book.searchPlaceholder}">
+    <button type="submit" th:text="#{common.search}">검색</button>
+  </form>
+
+  <ul class="book-results">
+
+    <!-- 책 한 권씩 (여기부터) -->
+    <li class="book-row" th:each="book : ${books}">
+
+      <!-- 표지 -->
+      <img class="cover"
+           th:if="${book.coverUrl != null and book.coverUrl != ''}"
+           th:src="${book.coverUrl}" th:alt="#{book.coverAlt}">
+      <div class="cover no-cover"
+           th:unless="${book.coverUrl != null and book.coverUrl != ''}"
+           th:text="#{common.noCover}">표지 없음</div>
+
+      <!-- 책 정보 (제목 누르면 상세로) — 데이터라서 번역 안 함 -->
+      <div class="info">
+        <h3><a th:href="@{/books/{id}(id=${book.id})}" th:text="${book.title}"></a></h3>
+        <p>
+          <span th:text="${book.authors}"></span> ·
+          <span th:text="${book.publisher}"></span>
+        </p>
+
+        <!-- 대출 가능 표시 -->
+        <p class="badge" th:if="${book.availableCount > 0}"
+           th:text="#{book.available} + ' (' + ${book.availableCount} + '/' + ${book.totalCount} + ')'"></p>
+        <p class="badge none" th:unless="${book.availableCount > 0}"
+           th:text="#{book.allLoaned} + ' (0/' + ${book.totalCount} + ')'"></p>
+      </div>
+
+    </li>
+    <!-- 책 한 권씩 (여기까지) -->
+
+    <!-- 검색 결과 없을 때 -->
+    <li class="empty" th:if="${books.isEmpty()}" th:text="#{book.empty}">
+      검색 결과가 없습니다.
+    </li>
+  </ul>
+
+  <!-- 페이지 번호 -->
+  <div class="paging" th:if="${totalPages > 1}">
+    <a th:each="i : ${#numbers.sequence(1, totalPages)}"
+       th:href="@{/books(keyword=${keyword}, page=${i})}"
+       th:text="${i}"
+       th:classappend="${i == page} ? 'active'"></a>
+  </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{error404.title}">페이지를 찾을 수 없습니다 - PZM 도서관</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <style>
+        .error-box { max-width: 480px; margin: 100px auto; text-align: center; background: #fff;
+                     padding: 48px 32px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .error-code { font-size: 64px; font-weight: bold; color: #3498db; }
+        .error-msg { margin: 16px 0 28px; color: #555; line-height: 1.6; }
+        .error-btn { display: inline-block; padding: 10px 24px; background: #3498db; color: #fff;
+                     border-radius: 6px; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="error-box">
+    <div class="error-code">404</div>
+    <p class="error-msg">
+        <span th:text="#{error404.msg1}">요청하신 페이지를 찾을 수 없습니다.</span><br>
+        <span th:text="#{error404.msg2}">주소가 맞는지 확인해 주세요.</span>
+    </p>
+    <a href="/" class="error-btn" th:text="#{common.home}">🏠 홈으로</a>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

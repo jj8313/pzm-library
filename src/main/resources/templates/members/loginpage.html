@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{login.pageTitle}">로그인 - PZM 도서관</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/login.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="login-box">
+  <h2 th:text="#{login.title}">로그인</h2>
+
+  <!-- 에러 문구는 Controller(Service)에서 옴 → 6단계에서 다국어 처리 -->
+  <p class="error" th:if="${error}" th:text="${error}"></p>
+
+  <form action="/login" method="post">
+    <label for="email" th:text="#{login.email}">이메일</label>
+    <input type="email" id="email" name="email" th:placeholder="#{login.emailPlaceholder}" required>
+
+    <label for="password" th:text="#{login.password}">비밀번호</label>
+    <input type="password" id="password" name="password" th:placeholder="#{login.passwordPlaceholder}" required>
+
+    <button type="submit" class="login-btn" th:text="#{login.submit}">로그인</button>
+  </form>
+
+  <div class="login-links">
+    <th:block th:text="#{login.noAccount}">아직 회원이 아니신가요?</th:block>
+    <a href="/members/join" th:text="#{login.join}">회원가입</a>
+  </div>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

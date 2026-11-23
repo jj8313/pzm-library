@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<header th:fragment="header">
+  <!-- 폴링: 회원만, 10초마다 안 읽은 개수 물어보기 -->
+  <script th:if="${loginMember != null and !loginMember.isAdmin()}">
+    document.addEventListener("DOMContentLoaded", function () {
+
+      const badge = document.getElementById("talkBadge");
+      if (!badge) return;
+
+      setInterval(function () {
+        fetch("/talk/unread-count")
+          .then(function (res) { return res.json(); })
+          .then(function (count) {
+            badge.textContent = count;
+            badge.style.display = (count > 0) ? "inline-block" : "none";
+          });
+      }, 10000);
+
+    });
+  </script>
+  <h1><a href="/" class="logo" th:text="#{header.logo}">📚 pzm 도서관</a></h1>
+
+  <div class="nav-links">
+    <!-- 로그인했을 때: 환영 문구 ({0} 자리에 닉네임) -->
+    <span class="nickname" th:if="${loginMember != null}"
+          th:text="#{header.welcome(${loginMember.nickname})}"></span>
+
+    <a href="/" th:text="#{header.home}">홈</a>
+    <a href="/board/list" th:text="#{header.board}">게시판</a>
+
+    <!-- 로그인 안 했을 때 -->
+    <th:block th:if="${loginMember == null}">
+      <a href="/loginpage" th:text="#{header.login}">로그인</a>
+      <a href="/members/join" th:text="#{header.join}">회원가입</a>
+    </th:block>
+
+    <!-- 로그인 했을 때 -->
+    <th:block th:if="${loginMember != null}">
+      <a href="/mypage" th:text="#{header.mypage}">마이페이지</a>
+
+      <!-- 내 대출: 회원만 (관리자는 빌려주는 사람) -->
+      <a href="/mypage/loans" th:if="${!loginMember.isAdmin()}" th:text="#{header.myloans}">내 대출</a>
+
+      <!-- 회원용 톡톡 + 🔴 안 읽은 개수 -->
+      <a href="#" th:if="${!loginMember.isAdmin()}"
+         onclick="document.getElementById('talkBadge').style.display='none';
+                  window.open('/talk', 'talk', 'width=420,height=650'); return false;">
+        <span th:text="#{header.talk}">💬 톡톡</span><span id="talkBadge"
+                                                        th:text="${unreadCount}"
+                                                        th:styleappend="${unreadCount > 0} ? 'display:inline-block;' : 'display:none;'"
+                                                        style="min-width:18px; height:18px; line-height:18px;
+                           margin-left:4px; padding:0 5px; border-radius:9px;
+                           background:#e74c3c; color:#fff; font-size:11px; font-weight:bold;
+                           text-align:center;"></span>
+      </a>
+
+      <!-- 대출 정지 표시 ({0} 자리에 날짜) -->
+      <span th:if="${suspendedUntil != null}"
+            style="color:#ff6b6b; font-weight:bold; margin-left:12px;"
+            th:text="#{header.suspended(${#temporals.format(suspendedUntil, 'MM.dd')})}"></span>
+
+      <!-- 관리자만 보이는 메뉴 -->
+      <th:block th:if="${loginMember.isAdmin()}">
+        <span style="color:#7f8c8d; margin:0 4px;">│</span>
+        <a href="/admin/dashboard" class="admin-link" th:text="#{header.dashboard}">대시보드</a>
+        <a href="/admin/books/list" class="admin-link" th:text="#{header.adminBooks}">도서 관리</a>
+        <a href="/admin/loans" class="admin-link" th:text="#{header.adminLoans}">대출 관리</a>
+        <a href="/admin/members" class="admin-link" th:text="#{header.adminMembers}">회원 관리</a>
+        <a href="/admin/talk" th:text="#{header.adminTalk}">💬 톡톡 문의</a>
+      </th:block>
+
+      <form action="/logout" method="post" class="logout-form">
+        <button type="submit" class="logout-btn" th:text="#{header.logout}">로그아웃</button>
+      </form>
+    </th:block>
+
+    <!-- 언어 바꾸기: 지금 주소에 ?lang=ko / ?lang=ja 붙이기 -->
+    <span class="lang-links">
+      <a href="?lang=ko">한국어</a> | <a href="?lang=ja">日本語</a>
+    </span>
+  </div>
+
+</header>
+
+</body>
+</html>

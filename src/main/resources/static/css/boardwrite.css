@@ -1,0 +1,144 @@
+.write-box {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 30px 40px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.write-title {
+    margin: 0;
+    padding-bottom: 20px;
+    font-size: 22px;
+    font-weight: normal;
+    color: #333;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+/* 제목 */
+.write-row {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.title-input {
+    width: 100%;
+    padding: 22px 12px;
+    font-size: 15px;
+    border: none;
+    outline: none;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.title-input::placeholder {
+    color: #999;
+}
+
+/* ===== 이미지 선택 ===== */
+.image-area {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.image-label {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #444;
+}
+
+.image-label span {
+    margin-left: 6px;
+    font-size: 12px;
+    font-weight: normal;
+    color: #999;
+}
+
+.image-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 옆에 작은 썸네일 */
+.image-thumb {
+    display: none;            /* 처음엔 숨김 */
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* 내용 */
+.content-input {
+    width: 100%;
+    height: 400px;
+    margin-top: 20px;
+    padding: 14px;
+    font-size: 14px;
+    line-height: 1.7;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    resize: vertical;
+    outline: none;
+    font-family: inherit;
+}
+
+.content-input:focus {
+    border-color: #3498db;
+}
+
+.content-input::placeholder {
+    color: #999;
+}
+
+/* 버튼 */
+.write-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 30px;
+}
+
+.btn {
+    display: inline-block;
+    min-width: 105px;
+    padding: 12px 24px;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.btn-blue { background-color: #3498db; }
+.btn-blue:hover { background-color: #2980b9; }
+
+.btn-dark { background-color: #444b5a; }
+.btn-dark:hover { background-color: #333945; }
+
+/* 수정 화면: 기존 이미지 (나중에 쓸 것) */
+.edit-images {
+    margin-top: 20px;
+}
+
+.edit-images-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.edit-images-list img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}

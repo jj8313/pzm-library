@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{index.title}">PZM 도서관 & 게시판</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/index.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container">
+    <!-- 도서 검색 영역 (검색하면 /books 결과 화면으로 이동) -->
+    <div class="search-section">
+        <h2 th:text="#{index.searchTitle}">도서 통합 검색</h2>
+        <form action="/books" method="get">
+            <input type="text" name="keyword" class="search-box"
+                   th:placeholder="#{index.searchPlaceholder}">
+            <button type="submit" class="search-btn" th:text="#{common.search}">검색</button>
+        </form>
+    </div>
+
+    <!-- 새로 들어온 책 10권 (관리자가 등록한 순서, 최신이 먼저) -->
+    <div class="nb">
+        <div class="nb-head">
+            <h2 th:text="#{index.newBooks}">📚 새로 들어온 책</h2>
+            <a href="/books" th:text="#{index.viewAll}">전체 보기 →</a>
+        </div>
+
+        <!-- 책이 하나도 없을 때 -->
+        <p th:if="${#lists.isEmpty(newBooks)}" class="nb-empty" th:text="#{index.empty}">
+            아직 등록된 책이 없습니다.
+        </p>
+
+        <!-- 책 카드 10개 -->
+        <div class="nb-grid" th:unless="${#lists.isEmpty(newBooks)}">
+            <a class="nb-card" th:each="book : ${newBooks}"
+               th:href="@{/books/{id}(id=${book.id})}">
+
+                <!-- 표지가 있으면 표지, 없으면 회색 상자 -->
+                <img class="nb-cover"
+                     th:if="${book.coverUrl != null and !book.coverUrl.isEmpty()}"
+                     th:src="${book.coverUrl}" th:alt="${book.title}">
+                <div class="nb-cover nb-no-cover"
+                     th:unless="${book.coverUrl != null and !book.coverUrl.isEmpty()}"
+                     th:text="#{common.noCover}">표지 없음</div>
+
+                <p class="nb-title" th:text="${book.title}">책 제목</p>
+                <p class="nb-author" th:text="${book.authors}">저자</p>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

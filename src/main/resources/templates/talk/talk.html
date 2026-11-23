@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{talk.pageTitle}">PZM 도서관 톡톡</title>
+  <link rel="stylesheet" th:href="@{/css/talk.css}">
+  <script th:src="@{/js/talk.js}" defer></script>
+</head>
+<body>
+
+<div class="top" th:text="#{talk.top}">💬 PZM 도서관 톡톡</div>
+
+<!-- data-admin-name: talk.js가 새 말풍선을 만들 때 쓸 이름 (언어 따라 바뀜) -->
+<div class="chat" id="chat" th:data-admin-name="#{talk.adminName}">
+
+  <p class="empty" th:if="${messages.isEmpty()}" th:text="#{talk.empty}">궁금한 점을 남겨 주세요 😊</p>
+
+  <div th:each="m : ${messages}">
+
+    <!-- 내가 보낸 것 (회원): 오른쪽 -->
+    <div class="row me" th:unless="${m.fromAdmin}">
+      <span class="time" th:text="${#temporals.format(m.createdAt, 'a h:mm')}"></span>
+      <div class="bubble" th:text="${m.content}"></div>
+    </div>
+
+    <!-- 도서관이 보낸 것: 왼쪽 -->
+    <div class="row admin" th:if="${m.fromAdmin}">
+      <div>
+        <div class="name" th:text="#{talk.adminName}">📚 PZM 도서관</div>
+        <div class="bubble" th:text="${m.content}"></div>
+      </div>
+      <span class="time" th:text="${#temporals.format(m.createdAt, 'a h:mm')}"></span>
+    </div>
+
+  </div>
+</div>
+
+<form class="input" id="talkForm">
+  <input type="text" id="content" th:placeholder="#{talk.placeholder}" maxlength="500" autocomplete="off" autofocus>
+  <button type="submit" th:text="#{talk.send}">보내기</button>
+</form>
+
+</body>
+</html>

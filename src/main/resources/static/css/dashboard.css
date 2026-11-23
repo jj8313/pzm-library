@@ -1,0 +1,45 @@
+/* ===== 관리자 대시보드 ===== */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);   /* 한 줄에 3개 */
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.dash-card {
+  display: block;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #333;
+}
+
+.dash-card:hover {
+  border-color: #1e3a5f;
+  background: #f7f9fc;
+}
+
+.dash-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.dash-num {
+  margin-top: 8px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+/* 연체 카드만 빨간 숫자 */
+.dash-red .dash-num {
+  color: #c0392b;
+}
+
+/* 화면이 좁으면 한 줄에 2개 */
+@media (max-width: 700px) {
+  .dash-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

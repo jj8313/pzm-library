@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.mapper.MessageMapper">
+
+    <!-- ① 메시지 저장 (id, created_at은 자동) -->
+    <insert id="insert">
+        INSERT INTO messages (member_id, from_admin, content)
+        VALUES (#{memberId}, #{fromAdmin}, #{content})
+    </insert>
+    <!-- ② 이 회원의 대화 전체 (오래된 것부터) -->
+    <select id="findByMemberId" resultType="com.example.demo.entity.Message">
+        SELECT *
+        FROM messages
+        WHERE member_id = #{memberId}
+        ORDER BY id ASC
+    </select>
+    <!-- ③ 관리자: 대화 목록 (회원마다 마지막 메시지 1개, 최근 대화가 위로) -->
+    <select id="findLastMessages" resultType="com.example.demo.entity.Message">
+        SELECT messages.*, members.nickname
+        FROM messages
+        JOIN members ON messages.member_id = members.id
+        WHERE messages.id IN (
+        SELECT MAX(id) FROM messages GROUP BY member_id
+        )
+        ORDER BY messages.id DESC
+    </select>
+
+    <!-- ④ 회원: 도서관이 보낸 것 중 안 읽은 개수 (헤더 🔴용) -->
+    <select id="countUnread" resultType="int">
+        SELECT COUNT(*)
+        FROM messages
+        WHERE member_id = #{memberId}
+        AND from_admin = 1
+        AND is_read = 0
+    </select>
+
+    <!-- ⑤ 회원이 톡톡을 열면: 도서관 메시지 전부 읽음으로 -->
+    <update id="markRead">
+        UPDATE messages
+        SET is_read = 1
+        WHERE member_id = #{memberId}
+        AND from_admin = 1
+        AND is_read = 0
+    </update>
+</mapper>

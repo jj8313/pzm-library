@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{join.pageTitle}">회원가입 - PZM 도서관</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/join.css}">
+
+  <!-- th:inline="javascript" → 이 안에서 [[#{키}]] 로 번역 글자를 넣을 수 있음 -->
+  <script th:inline="javascript">
+    // JS에서 쓰는 문구를 한곳에 모아 둠 (언어에 따라 바뀜)
+    const MSG = {
+        emailEmpty:    [[#{join.js.emailEmpty}]],
+        sending:       [[#{join.js.sending}]],
+        sent:          [[#{join.js.sent}]],
+        serverError:   [[#{join.js.serverError}]],
+        verified:      [[#{join.js.verified}]],
+        nickEmpty:     [[#{join.js.nickEmpty}]],
+        nickTaken:     [[#{join.js.nickTaken}]],
+        nickOk:        [[#{join.js.nickOk}]],
+        needVerify:    [[#{join.js.needVerify}]],
+        needNickCheck: [[#{join.js.needNickCheck}]]
+    };
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // 여러 번 쓰는 요소만 위에서 가져오기
+        const emailInput = document.getElementById("email");
+        const msg = document.getElementById("msg");
+        const nicknameInput = document.getElementById("nickname");
+        const nickMsg = document.getElementById("nickMsg");
+
+        let verified = false;          // 이메일 인증 통과했나?
+        let nicknameChecked = false;   // 닉네임 중복 확인 통과했나?
+
+        function showMsg(text, ok) {
+            msg.textContent = text;
+            msg.style.color = ok ? "green" : "#e74c3c";
+        }
+
+        // 닉네임 메시지용 (이메일 메시지랑 따로)
+        function showNickMsg(text, ok) {
+            nickMsg.textContent = text;
+            nickMsg.style.color = ok ? "green" : "#e74c3c";
+        }
+
+        // 인증코드 받기
+        document.getElementById("sendBtn").addEventListener("click", function () {
+            const email = emailInput.value;
+            if (!email) {
+                showMsg(MSG.emailEmpty, false);
+                return;
+            }
+            showMsg(MSG.sending, true);
+
+            fetch("/members/email/send", {
+                method: "POST",
+                body: new URLSearchParams({ email: email })
+            })
+            .then(res => res.text())
+            .then(result => {
+                if (result === "OK") {
+                    showMsg(MSG.sent, true);
+                } else {
+                    showMsg(result, false);   // 서버가 보낸 문구 (6단계에서 다국어)
+                }
+            })
+            .catch(() => showMsg(MSG.serverError, false));
+        });
+
+        // 확인
+        document.getElementById("verifyBtn").addEventListener("click", function () {
+            const code = document.getElementById("code").value;
+
+            fetch("/members/email/verify", {
+                method: "POST",
+                body: new URLSearchParams({ email: emailInput.value, code: code })
+            })
+            .then(res => res.text())
+            .then(result => {
+                if (result === "OK") {
+                    verified = true;
+                    emailInput.readOnly = true;
+                    showMsg(MSG.verified, true);
+                } else {
+                    showMsg(result, false);   // 서버가 보낸 문구 (6단계에서 다국어)
+                }
+            })
+            .catch(() => showMsg(MSG.serverError, false));
+        });
+
+        // 닉네임 중복 확인 버튼
+        document.getElementById("nickBtn").addEventListener("click", function () {
+            const nickname = nicknameInput.value.trim();   // 앞뒤 공백 제거
+            if (!nickname) {
+                showNickMsg(MSG.nickEmpty, false);
+                return;
+            }
+
+            // GET이라 주소 뒤에 붙여서 보냄. 한글이라 encodeURIComponent로 감싸기
+            fetch("/members/check-nickname?nickname=" + encodeURIComponent(nickname))
+            .then(res => res.json())            // true / false
+            .then(exists => {
+                if (exists) {
+                    nicknameChecked = false;
+                    showNickMsg(MSG.nickTaken, false);
+                } else {
+                    nicknameChecked = true;
+                    showNickMsg(MSG.nickOk, true);
+                }
+            })
+            .catch(() => showNickMsg(MSG.serverError, false));
+        });
+
+        // 확인한 뒤에 닉네임을 다시 고치면 → 다시 확인해야 함
+        nicknameInput.addEventListener("input", function () {
+            nicknameChecked = false;
+            showNickMsg("", true);
+        });
+
+        // 가입하기 전 확인
+        document.getElementById("joinForm").addEventListener("submit", function (e) {
+            if (!verified) {
+                e.preventDefault();
+                showMsg(MSG.needVerify, false);
+                return;
+            }
+            // 닉네임 확인 안 했으면 막기
+            if (!nicknameChecked) {
+                e.preventDefault();
+                showNickMsg(MSG.needNickCheck, false);
+            }
+        });
+    });
+  </script>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="join-box">
+  <h2 th:text="#{join.title}">회원가입</h2>
+
+  <p class="error" th:if="${error}" th:text="${error}"></p>
+
+  <form id="joinForm" action="/members/join" method="post">
+
+    <label for="email" th:text="#{join.email}">이메일</label>
+    <div class="row">
+      <input type="email" id="email" name="email" placeholder="example@example.com" required>
+      <button type="button" id="sendBtn" class="sub-btn" th:text="#{join.sendCode}">인증코드 받기</button>
+    </div>
+
+    <label for="code" th:text="#{join.code}">인증코드</label>
+    <div class="row">
+      <input type="text" id="code" th:placeholder="#{join.codePlaceholder}" maxlength="6">
+      <button type="button" id="verifyBtn" class="sub-btn" th:text="#{join.verify}">확인</button>
+    </div>
+    <p id="msg" class="msg"></p>
+
+    <label for="passwordHash" th:text="#{join.password}">비밀번호</label>
+    <input type="password" id="passwordHash" name="passwordHash"
+           th:placeholder="#{join.passwordPlaceholder}"
+           pattern="^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,16}$"
+           th:title="#{join.passwordTitle}"
+           required>
+
+    <!-- 닉네임 옆에 버튼 (이메일이랑 같은 row 모양) -->
+    <label for="nickname" th:text="#{join.nickname}">닉네임</label>
+    <div class="row">
+      <input type="text" id="nickname" name="nickname" th:placeholder="#{join.nicknamePlaceholder}"
+             maxlength="50" required>
+      <button type="button" id="nickBtn" class="sub-btn" th:text="#{join.nickCheck}">중복 확인</button>
+    </div>
+    <p id="nickMsg" class="msg"></p>
+
+    <button type="submit" class="join-btn" th:text="#{join.submit}">가입하기</button>
+  </form>
+
+  <div class="join-links">
+    <th:block th:text="#{join.haveAccount}">이미 회원이신가요?</th:block>
+    <a href="/loginpage" th:text="#{join.login}">로그인</a>
+  </div>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

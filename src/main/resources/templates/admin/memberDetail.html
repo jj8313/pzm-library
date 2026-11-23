@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{adminMemberDetail.pageTitle}">회원 상세 - 관리자</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="admin-box">
+
+    <!-- 제목: 닉네임 + 이메일, 오른쪽에 목록 버튼 -->
+    <div class="admin-top">
+        <h2>
+            <span th:text="${member.nickname}"></span>
+            <span class="sub" th:text="${member.email}"></span>
+        </h2>
+        <a href="/admin/members" class="top-btn" th:text="#{adminMemberDetail.back}">← 회원 목록</a>
+    </div>
+
+    <!-- 회원 정보 한 줄 -->
+    <p style="margin: 0 0 24px; color: #666; font-size: 14px;">
+        <th:block th:text="#{adminMemberDetail.joined}">가입일</th:block>
+        <span th:text="${#temporals.format(member.createdAt, 'yyyy.MM.dd')}"></span>
+        ·
+        <span th:if="${member.isWithdrawn()}" class="status out" th:text="#{adminMember.withdrawn}">탈퇴</span>
+        <span th:if="${member.isSuspended()}" class="status stop"
+              th:text="#{adminMember.suspended} + ' ~' + ${#temporals.format(member.suspendedUntil, 'MM.dd')}"></span>
+        <span th:if="${!member.isWithdrawn() and !member.isSuspended()}" class="status ok"
+              th:text="#{adminMember.ok}">정상</span>
+    </p>
+
+    <h3 style="margin: 0 0 10px; color: #2c3e50;">
+        <span th:text="#{adminMemberDetail.nowLoans}">📚 지금 빌리고 있는 책</span>
+        <span style="font-size: 14px; color: #999;" th:text="${loans.size()} + #{admin.countUnit}"></span>
+    </h3>
+
+    <table class="member-table">
+        <thead>
+        <tr>
+            <th th:text="#{adminMemberDetail.colTitle}">책 제목</th>
+            <th th:text="#{admin.col.barcode}">바코드</th>
+            <th th:text="#{admin.col.status}">상태</th>
+            <th th:text="#{adminLoan.requestedAt}">신청일</th>
+            <th th:text="#{adminLoan.loanedAt}">대출일</th>
+            <th th:text="#{admin.col.due}">반납 기한</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="loan : ${loans}">
+            <td style="text-align: left;">
+                <a th:href="@{/books/{id}(id=${loan.bookId})}" th:text="${loan.title}"></a>
+            </td>
+            <td th:text="${loan.barcode}"></td>
+
+            <!-- 상태 -->
+            <td>
+                <span th:if="${loan.isRequested()}" th:text="#{adminMemberDetail.waiting}">⏳ 승인 대기</span>
+                <span th:if="${loan.isLoaned() and !loan.isOverdue()}" th:text="#{admin.st.loaned}">📗 대출 중</span>
+                <span th:if="${loan.isOverdue()}" class="status stop" th:text="#{admin.st.overdue}">📕 연체</span>
+            </td>
+
+            <td th:text="${#temporals.format(loan.requestedAt, 'MM.dd')}"></td>
+            <td th:text="${loan.loanedAt != null} ? ${#temporals.format(loan.loanedAt, 'MM.dd')} : '-'"></td>
+
+            <!-- 반납 기한 + D-day / 연체 일수 -->
+            <td>
+                <th:block th:if="${loan.dueDate == null}">-</th:block>
+                <th:block th:if="${loan.dueDate != null}">
+                    <span th:text="${#temporals.format(loan.dueDate, 'MM.dd')}"></span>
+                    <span th:if="${loan.dday > 0}" th:text="'(D-' + ${loan.dday} + ')'"></span>
+                    <span th:if="${loan.dday == 0}" th:text="#{adminMemberDetail.today}">(오늘까지)</span>
+                    <!-- (3일 연체) / (3日延滞) -->
+                    <span th:if="${loan.isOverdue()}" style="color: #c0392b; font-weight: bold;"
+                          th:text="'(' + ${-loan.dday} + #{adminMemberDetail.overdueSuffix} + ')'"></span>
+                </th:block>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- 빌린 책이 없을 때 -->
+    <p class="empty" th:if="${loans.isEmpty()}" th:text="#{adminMemberDetail.empty}">지금 빌리고 있는 책이 없습니다.</p>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

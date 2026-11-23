@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{mypageEdit.pageTitle}">정보 수정 - PZM 도서관</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/mypage.css}">
+    <link rel="stylesheet" th:href="@{/css/mypageedit.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="mypage-wrap">
+
+    <h2 class="page-title" th:text="#{mypageEdit.title}">정보 수정</h2>
+
+    <section class="my-box">
+        <!-- 에러 문구는 Controller(Service)에서 옴 → 6단계에서 다국어 -->
+        <p class="error" th:if="${error}" th:text="${error}"></p>
+
+        <form action="/mypage/edit" method="post" class="edit-form">
+
+            <!-- 이메일: 보여주기만 (name 없음 → 서버로 안 감) -->
+            <label th:text="#{mypage.email}">이메일</label>
+            <input type="email" th:value="${loginMember.email}" readonly>
+
+            <!-- 닉네임: 지금 닉네임 미리 채우기 -->
+            <label for="nickname" th:text="#{mypage.nickname}">닉네임</label>
+            <input type="text" id="nickname" name="nickname"
+                   th:value="${loginMember.nickname}" required>
+
+            <!-- 새 비밀번호 -->
+            <label for="newPassword" th:text="#{mypageEdit.newPassword}">새 비밀번호</label>
+            <input type="password" id="newPassword" name="newPassword"
+                   th:placeholder="#{mypageEdit.newPasswordPlaceholder}">
+
+            <!-- 새 비밀번호 확인 -->
+            <label for="newPasswordConfirm" th:text="#{mypageEdit.confirm}">새 비밀번호 확인</label>
+            <input type="password" id="newPasswordConfirm" name="newPasswordConfirm"
+                   th:placeholder="#{mypageEdit.confirmPlaceholder}">
+
+            <div class="edit-buttons">
+                <button type="submit" class="btn-save" th:text="#{mypageEdit.save}">저장</button>
+                <a href="/mypage" class="btn-cancel" th:text="#{mypageEdit.cancel}">취소</a>
+            </div>
+        </form>
+    </section>
+
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

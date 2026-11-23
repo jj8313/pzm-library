@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{board.pageTitle}">게시판 - PZM 도서관</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/board.css}">
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const writeBtn = document.getElementById("writeBtn");
+
+        writeBtn.addEventListener("click", function () {
+            fetch("/board/check-login")
+            .then(res => res.text())
+            .then(result => {
+                if (result === "OK") {
+                    location.href = "/board/write";
+                } else if (confirm(writeBtn.dataset.confirm)) {   // 버튼에 붙여 둔 번역 글자
+                    location.href = "/loginpage";
+                }
+            });
+        });
+    });
+  </script>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="board-box">
+  <h2 th:text="#{board.title}">자유게시판</h2>
+
+  <!-- ===== 글 목록 ===== -->
+  <table class="board-table">
+    <thead>
+    <tr>
+      <th class="col-num" th:text="#{board.colNum}">번호</th>
+      <th class="col-title" th:text="#{board.colTitle}">제목</th>
+      <th class="col-writer" th:text="#{board.colWriter}">작성자</th>
+      <th class="col-date" th:text="#{board.colDate}">작성일</th>
+      <th class="col-view" th:text="#{board.colView}">조회</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- 공지면 줄 배경을 연하게 -->
+    <tr th:each="post, stat : ${posts}"
+        th:style="${post.board == 'NOTICE'} ? 'background:#fff8e1; font-weight:bold;' : ''">
+
+      <!-- 공지면 번호 대신 📢 -->
+      <td th:if="${post.board == 'NOTICE'}">📢</td>
+      <!-- 번호: 2페이지면 11부터 (내가 쓴 글 화면은 1부터) -->
+      <td th:unless="${post.board == 'NOTICE'}"
+          th:text="${page != null} ? ${(page - 1) * 10 + stat.count} : ${stat.count}"></td>
+
+      <td class="title">
+        <!-- 공지면 제목 앞에 [공지] -->
+        <span th:if="${post.board == 'NOTICE'}" style="color:#e67e22;" th:text="#{board.notice}">[공지]</span>
+        <a th:href="@{'/board/' + ${post.id}}" th:text="${post.title}"></a>
+      </td>
+      <td>
+        <a th:href="@{/board/list(type='writer', keyword=${post.nickname})}"
+           th:text="${post.nickname}"
+           style="color:inherit;"></a>
+      </td>
+      <td th:text="${#temporals.format(post.createdAt, 'yy.MM.dd')}"></td>
+      <td th:text="${post.viewCount}"></td>
+    </tr>
+
+    <!-- 글이 없을 때: 검색했으면 "검색 결과 없음", 아니면 "글 없음" -->
+    <tr th:if="${posts == null or #lists.isEmpty(posts)}">
+      <td colspan="5" class="empty"
+          th:text="${keyword != null and keyword != ''} ? #{board.noResult} : #{board.empty}"></td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- ===== 검색 + 버튼 한 줄 ===== -->
+  <div class="board-bottom">
+
+    <!-- 왼쪽: 검색 (검색 후에도 값 유지) -->
+    <form class="search-bar" action="/board/list" method="get">
+      <select name="type">
+        <option value="all"    th:selected="${type == 'all'}"    th:text="#{board.typeAll}">제목+본문</option>
+        <option value="title"  th:selected="${type == 'title'}"  th:text="#{board.typeTitle}">제목</option>
+        <option value="writer" th:selected="${type == 'writer'}" th:text="#{board.typeWriter}">글쓴이</option>
+      </select>
+      <input type="text" name="keyword" th:placeholder="#{board.searchPlaceholder}"
+             th:value="${keyword}">
+      <button type="submit" th:aria-label="#{common.search}">
+        <svg viewBox="0 0 24 24" width="18" height="18">
+          <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+          <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </button>
+    </form>
+
+    <!-- 오른쪽: 버튼 -->
+    <div class="board-buttons">
+      <a th:if="${loginMember != null}" href="/board/my" class="btn btn-dark"
+         th:text="#{board.myPosts}">내가 쓴 글 보기</a>
+      <button type="button" id="writeBtn" class="btn btn-blue"
+              th:data-confirm="#{board.loginConfirm}"
+              th:text="#{board.write}">글쓰기</button>
+    </div>
+  </div>
+
+  <!-- ===== 페이지 번호 (검색 정보도 같이 들고 감) ===== -->
+  <div class="pagination" th:if="${totalPages != null and totalPages > 0}">
+
+    <a th:if="${page > 1}"
+       th:href="@{/board/list(page=${page - 1}, type=${type}, keyword=${keyword})}"
+       class="arrow">&lsaquo;</a>
+
+    <a th:each="num : ${#numbers.sequence(1, totalPages)}"
+       th:href="@{/board/list(page=${num}, type=${type}, keyword=${keyword})}"
+       th:text="${num}"
+       th:classappend="${num == page} ? 'active'"></a>
+
+    <a th:if="${page < totalPages}"
+       th:href="@{/board/list(page=${page + 1}, type=${type}, keyword=${keyword})}"
+       class="arrow">&rsaquo;</a>
+  </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

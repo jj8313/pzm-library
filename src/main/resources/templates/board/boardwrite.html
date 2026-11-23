@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{boardForm.writePageTitle}">글쓰기 - PZM 도서관</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/boardwrite.css}">
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // 파일 칸 5개에 하나씩
+        document.querySelectorAll(".image-file").forEach(function (input) {
+
+            input.addEventListener("change", function () {
+                const thumb = input.nextElementSibling;   // 바로 옆 작은 <img>
+
+                if (input.files.length > 0) {
+                    thumb.src = URL.createObjectURL(input.files[0]);
+                    thumb.style.display = "block";
+                } else {
+                    thumb.style.display = "none";
+                }
+            });
+        });
+    });
+  </script>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="write-box">
+
+  <!-- 테스터1님의 글 / 테스터1さんの投稿 -->
+  <h2 class="write-title"
+      th:text="${loginMember.nickname} + #{boardForm.titleSuffix}">님의 글</h2>
+
+  <form action="/board/write" method="post" enctype="multipart/form-data">
+
+    <!-- 제목 -->
+    <div class="write-row">
+      <input type="text" name="title" class="title-input"
+             th:placeholder="#{boardForm.titlePlaceholder}" maxlength="255" required>
+    </div>
+
+    <!-- 관리자만 보이는 공지 체크박스 -->
+    <div class="write-row" th:if="${loginMember.isAdmin()}">
+      <label>
+        <input type="checkbox" name="notice" value="true">
+        <span th:text="#{boardForm.notice}">📢 공지로 올리기</span>
+      </label>
+    </div>
+
+    <!-- 이미지 (최대 5장, 칸마다 1장 + 옆에 썸네일) -->
+    <div class="image-area">
+      <p class="image-label">
+        <th:block th:text="#{boardForm.image}">이미지</th:block>
+        <span th:text="#{boardForm.imageMax}">최대 5장</span>
+      </p>
+
+      <div class="image-row">
+        <input type="file" name="images" accept="image/*" class="image-file">
+        <img class="image-thumb" alt="">
+      </div>
+      <div class="image-row">
+        <input type="file" name="images" accept="image/*" class="image-file">
+        <img class="image-thumb" alt="">
+      </div>
+      <div class="image-row">
+        <input type="file" name="images" accept="image/*" class="image-file">
+        <img class="image-thumb" alt="">
+      </div>
+      <div class="image-row">
+        <input type="file" name="images" accept="image/*" class="image-file">
+        <img class="image-thumb" alt="">
+      </div>
+      <div class="image-row">
+        <input type="file" name="images" accept="image/*" class="image-file">
+        <img class="image-thumb" alt="">
+      </div>
+    </div>
+
+    <!-- 내용 -->
+    <textarea name="content" class="content-input" required
+              th:placeholder="#{boardForm.contentPlaceholder}"></textarea>
+
+    <!-- 버튼 -->
+    <div class="write-buttons">
+      <button type="submit" class="btn btn-blue" th:text="#{boardForm.submit}">등록</button>
+      <a href="/board/list" class="btn btn-dark" th:text="#{boardForm.cancel}">취소</a>
+    </div>
+  </form>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

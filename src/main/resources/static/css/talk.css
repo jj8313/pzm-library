@@ -1,0 +1,90 @@
+/* ===== 톡톡 (회원 채팅 창) ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: sans-serif;
+  background: #f0f2f5;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 위쪽 제목 줄 */
+.top {
+  background: #2c3e50;
+  color: #fff;
+  padding: 14px 16px;
+  font-weight: bold;
+}
+
+/* 대화 영역 (스크롤) */
+.chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* 말풍선 한 줄 */
+.row {
+  display: flex;
+  margin-bottom: 12px;
+  align-items: flex-end;
+  gap: 6px;
+}
+.row.me { justify-content: flex-end; }   /* 내가 보낸 건 오른쪽 */
+
+.name {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.bubble {
+  max-width: 240px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.me .bubble    { background: #3498db; color: #fff; }   /* 나: 파란색 */
+.admin .bubble { background: #fff;    color: #333; }   /* 도서관: 흰색 */
+
+.time {
+  font-size: 11px;
+  color: #999;
+  white-space: nowrap;
+}
+
+/* 대화가 없을 때 */
+.empty {
+  text-align: center;
+  color: #999;
+  margin-top: 40px;
+  font-size: 14px;
+}
+
+/* 아래 입력 줄 */
+.input {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  background: #fff;
+  border-top: 1px solid #ddd;
+}
+.input input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.input button {
+  padding: 10px 16px;
+  background: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.LostBookMapper">
+
+    <!-- 분실 기록 저장 (lost_at은 자동으로 지금) -->
+    <insert id="insert">
+        INSERT INTO lost_books (copy_id, member_id, reason)
+        VALUES (#{copyId}, #{memberId}, #{reason})
+    </insert>
+
+    <!-- 분실 목록: 바코드 + 책 제목 + 회원 닉네임 (최근 것부터) -->
+    <select id="findAll" resultType="com.example.demo.entity.LostBook">
+        SELECT lost_books.*, book_copies.barcode, book_copies.book_id, books.title, members.nickname
+        FROM lost_books
+        JOIN      book_copies ON lost_books.copy_id   = book_copies.id
+        JOIN      books       ON book_copies.book_id  = books.id
+        LEFT JOIN members     ON lost_books.member_id = members.id
+        ORDER BY lost_books.id DESC
+    </select>
+
+    <!-- 분실 몇 권 -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM lost_books
+    </select>
+</mapper>

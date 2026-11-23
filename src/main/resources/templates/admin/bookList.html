@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{adminBook.pageTitle}">등록된 도서 - 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="admin-box">
+
+  <!-- 제목 + 오른쪽 버튼들 (분실 도서, 도서 등록) -->
+  <div class="admin-top">
+    <h2>
+      <span th:text="#{adminBook.title}">등록된 도서</span>
+      <span class="sub" th:text="#{book.totalPre} + ' ' + ${total} + #{book.totalUnit}"></span>
+    </h2>
+    <div style="display:flex; gap:8px;">
+      <!-- ❌ 분실 도서 5권 / ❌ 紛失図書 5冊 -->
+      <a href="/admin/books/lost" class="top-btn" style="background:#95a5a6;"
+         th:text="#{adminBook.lostBtn} + ' ' + ${lostCount} + #{admin.unit}"></a>
+      <a href="/admin/books" class="top-btn" th:text="#{adminBook.registerBtn}">+ 도서 등록</a>
+    </div>
+  </div>
+
+  <!-- 검색창 -->
+  <form action="/admin/books/list" method="get" class="admin-search">
+    <input type="text" name="keyword" th:value="${keyword}"
+           th:placeholder="#{book.searchPlaceholder}">
+    <button type="submit" th:text="#{common.search}">검색</button>
+  </form>
+
+  <ul class="book-results">
+
+    <!-- DB의 책 한 권씩 -->
+    <li class="book-row" th:each="book : ${books}">
+
+      <!-- 표지 -->
+      <img class="cover"
+           th:if="${book.coverUrl != null and book.coverUrl != ''}"
+           th:src="${book.coverUrl}" th:alt="#{book.coverAlt}">
+      <div class="cover no-cover"
+           th:unless="${book.coverUrl != null and book.coverUrl != ''}"
+           th:text="#{common.noCover}">표지 없음</div>
+
+      <!-- 책 정보 (데이터라서 번역 안 함) -->
+      <div class="info" style="flex:1;">
+        <!-- 제목 클릭 → 책 상세 -->
+        <h3>
+          <a th:href="@{/books/{id}(id=${book.id})}" th:text="${book.title}"
+             style="color:inherit; text-decoration:none;"></a>
+        </h3>
+        <p>
+          <span th:text="${book.authors}"></span> ·
+          <span th:text="${book.publisher}"></span>
+        </p>
+        <p class="isbn">
+          <span th:text="'ISBN ' + ${book.isbn}"></span> ·
+          <span th:text="${#temporals.format(book.createdAt, 'yyyy.MM.dd')} + ' ' + #{adminBook.registered}"></span>
+        </p>
+      </div>
+
+      <!-- 오른쪽: 대출 상태 + 대출 이력 버튼 -->
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px; min-width:150px;">
+
+        <!-- 대출 상태: 가능 / 불가 / 전부 분실 -->
+        <!-- 📗 대출 가능 1 / 3권 -->
+        <span th:if="${book.availableCount > 0}"
+              th:text="#{adminBook.available} + ' ' + ${book.availableCount} + ' / ' + ${book.totalCount} + #{admin.unit}"
+              style="color:#27ae60; font-weight:bold; font-size:14px;"></span>
+
+        <!-- 🔴 대출 불가 (전체 3권) -->
+        <span th:if="${book.availableCount == 0 and book.totalCount > 0}"
+              th:text="#{adminBook.unavailable} + ' (' + #{adminBook.total} + ' ' + ${book.totalCount} + #{admin.unit} + ')'"
+              style="color:#e74c3c; font-weight:bold; font-size:14px;"></span>
+
+        <span th:if="${book.totalCount == 0}"
+              style="color:#999; font-weight:bold; font-size:14px;"
+              th:text="#{adminBook.noCopies}">❌ 소장 도서 없음 (전부 분실)</span>
+
+        <!-- 대출 이력 (실물 책 + 분실 처리도 여기서) -->
+        <a th:href="@{/admin/books/{id}/loans(id=${book.id})}"
+           style="padding:6px 12px; border:1px solid #3498db; border-radius:6px;
+                  color:#3498db; font-size:13px; text-decoration:none;"
+           th:text="#{adminBook.loanHistory}">📖 대출 이력</a>
+      </div>
+    </li>
+
+    <!-- 검색했는데 결과가 없을 때: "자바" 검색 결과가 없습니다. -->
+    <li class="empty" th:if="${books.isEmpty() and keyword != ''}">
+      "<span th:text="${keyword}"></span>"
+      <th:block th:text="#{adminBook.noResult}">검색 결과가 없습니다.</th:block>
+      <a href="/admin/books/list" th:text="#{adminBook.viewAll}">전체 목록 보기</a>
+    </li>
+
+    <!-- 책이 아예 하나도 없을 때 -->
+    <li class="empty" th:if="${books.isEmpty() and keyword == ''}">
+      <th:block th:text="#{adminBook.empty}">아직 등록된 도서가 없습니다.</th:block>
+      <a href="/admin/books" th:text="#{adminBook.goRegister}">도서 등록하러 가기</a>
+    </li>
+  </ul>
+
+  <!-- 페이지 번호 -->
+  <div class="paging" th:if="${totalPages > 1}">
+    <a th:each="i : ${#numbers.sequence(1, totalPages)}"
+       th:href="@{/admin/books/list(keyword=${keyword}, page=${i})}"
+       th:text="${i}"
+       th:classappend="${i == page} ? 'active'"></a>
+  </div>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

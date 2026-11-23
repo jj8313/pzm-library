@@ -1,0 +1,340 @@
+/* ===== 전체 박스 ===== */
+.admin-box {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.admin-box h2 {
+    margin: 0 0 20px;
+    color: #2c3e50;
+}
+
+.admin-box h2 .sub {
+    margin-left: 8px;
+    font-size: 14px;
+    font-weight: normal;
+    color: #999;
+}
+
+/* ===== 검색창 ===== */
+.admin-search {
+    display: flex;              /* 입력칸 + 버튼 한 줄 */
+    margin-bottom: 20px;
+}
+
+.admin-search input {
+    flex: 1;                    /* 남는 폭 전부 차지 */
+    padding: 12px;
+    font-size: 15px;
+    border: 2px solid #3498db;
+    border-right: none;
+    outline: none;
+    font-family: inherit;
+}
+
+.admin-search button {
+    padding: 0 24px;
+    background: #3498db;
+    color: white;
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+/* ===== 결과 목록 ===== */
+.book-results {
+    list-style: none;           /* 앞에 점(•) 없애기 */
+    margin: 0;
+    padding: 0;
+}
+
+.book-row {
+    display: flex;              /* 표지 | 정보 | 등록 가로로 */
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid #eee;
+}
+
+/* 표지 */
+.cover {
+    width: 70px;
+    height: 100px;
+    object-fit: cover;          /* 비율 안 깨지게 꽉 채우기 */
+    border: 1px solid #ddd;
+    flex-shrink: 0;             /* 좁아져도 표지 크기 유지 */
+}
+
+.no-cover {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eee;
+    color: #999;
+    font-size: 11px;
+}
+
+/* 책 정보 */
+.info {
+    flex: 1;                    /* 가운데 정보 칸이 남는 폭 차지 */
+    min-width: 0;
+}
+
+.info h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    color: #333;
+}
+
+.info p {
+    margin: 2px 0;
+    font-size: 13px;
+    color: #666;
+}
+
+.info .isbn {
+    color: #999;
+    font-size: 12px;
+}
+
+/* 등록 (권수 + 버튼) */
+.register {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #555;
+    flex-shrink: 0;
+}
+
+.register input[type="number"] {
+    width: 50px;
+    padding: 6px;
+    border: 1px solid #ccc;
+    font-family: inherit;
+}
+
+.register button {
+    padding: 8px 16px;
+    background: #2c3e50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+/* 안내 문구 */
+.empty {
+    padding: 40px;
+    text-align: center;
+    color: #999;
+}
+
+.success-msg {
+    margin: 0 0 16px;
+    padding: 12px 16px;
+    background: #e8f8ef;
+    color: #1e8449;
+    border-radius: 4px;
+    font-size: 14px;
+}
+/* 제목 + 오른쪽 버튼 한 줄 */
+.admin-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.admin-top h2 {
+    margin: 0;
+}
+
+.top-btn {
+    padding: 10px 18px;
+    background: #3498db;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+.top-btn:hover {
+    background: #2980b9;
+}
+
+/* 책 제목 링크 */
+.info h3 a {
+    color: #2c3e50;
+    text-decoration: none;
+}
+
+.info h3 a:hover {
+    color: #3498db;
+    text-decoration: underline;
+}
+
+/* 목록 대출 가능 표시 */
+.badge {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 3px 8px;
+    font-size: 12px;
+    background: #eafaf1;
+    color: #27ae60;
+    border-radius: 3px;
+}
+
+.badge.none {
+    background: #fdecea;
+    color: #c0392b;
+}
+/* 페이지 번호 */
+.paging {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.paging a {
+    display: inline-block;
+    margin: 0 3px;
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    color: #333;
+    text-decoration: none;
+}
+
+.paging a.active {
+    background: #3498db;
+    border-color: #3498db;
+    color: white;
+}
+/* 대출 신청 표 */
+.loan-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.loan-table th,
+.loan-table td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+    font-size: 14px;
+}
+
+.loan-table th {
+    background: #f5f6f8;
+}
+
+.approve-btn {
+    padding: 6px 14px;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.approve-btn:hover {
+    background: #219150;
+}
+
+.return-btn {
+    padding: 6px 14px;
+    background: #e67e22;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.return-btn:hover {
+    background: #ca6b1a;
+}
+
+/* ===== 회원 관리 (admin/memberList.html) ===== */
+.member-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.member-table th,
+.member-table td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+    font-size: 14px;
+}
+
+.member-table th {
+    background: #f5f6f8;
+}
+
+/* 회원 상태 뱃지 (.badge와 겹치지 않게 .status) */
+.status {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.status.ok    { background: #eafaf1; color: #27ae60; }                     /* 정상 */
+.status.stop  { background: #fdecea; color: #c0392b; font-weight: bold; }  /* 정지 */
+.status.out   { background: #eee;    color: #888; }                        /* 탈퇴 */
+.status.admin { background: #fff3cd; color: #8a6d00; }                     /* 관리자 */
+
+/* 회원 목록: 닉네임 링크 (기본 파란 밑줄 없애기) */
+.member-table a {
+    color: #2c3e50;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.member-table a:hover {
+    color: #3498db;
+    text-decoration: underline;
+}
+
+/* 대출 중 뱃지 (파랑) */
+.status.loan {
+    background: #e8f1fb;
+    color: #2471a3;
+}
+
+/* 0권일 때 회색 대시 */
+.none {
+    color: #ccc;
+}
+
+/* 누를 수 있는 뱃지: 원래 색 유지 + 마우스 올리면 진하게 */
+.member-table a.status {
+    font-weight: normal;
+    text-decoration: none;
+}
+
+.member-table a.status.loan { color: #2471a3; }
+.member-table a.status.stop { color: #c0392b; font-weight: bold; }
+
+.member-table a.status:hover {
+    filter: brightness(0.92);
+    text-decoration: none;
+}
+/* 대출 관리: 회원 이름 링크 */
+.loan-table a {
+    color: #2c3e50;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.loan-table a:hover {
+    color: #3498db;
+    text-decoration: underline;
+}

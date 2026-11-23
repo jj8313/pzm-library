@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{myloans.pageTitle}">내 대출 목록 - PZM 도서관</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="admin-box">
+
+  <!-- 결과 메시지 (취소, 연장, 반납) → 6단계에서 다국어 -->
+  <div class="success-msg" th:if="${message}" th:text="${message}"></div>
+
+  <h2>
+    <span th:text="#{myloans.title}">내 대출 목록</span>
+    <span class="sub" th:text="#{myloans.totalPre} + ' ' + ${loans.size()} + #{myloans.totalUnit}"></span>
+  </h2>
+  <p style="margin-bottom: 16px;">
+    <a href="/mypage/loans/history" th:text="#{myloans.history}">📚 대출 이력 보기 →</a>
+  </p>
+
+  <table class="loan-table">
+    <tr>
+      <th th:text="#{myloans.colBook}">책</th>
+      <th th:text="#{myloans.colBarcode}">바코드</th>
+      <th th:text="#{myloans.colStatus}">상태</th>
+      <th th:text="#{myloans.colLoanedAt}">대출일</th>
+      <th th:text="#{myloans.colDueDate}">반납 기한</th>
+      <th></th>
+    </tr>
+
+    <tr th:each="loan : ${loans}">
+      <td><a th:href="@{/books/{id}(id=${loan.bookId})}" th:text="${loan.title}"></a></td>
+      <td th:text="${loan.barcode}"></td>
+
+      <!-- 상태 -->
+      <td>
+        <span th:if="${loan.isRequested()}" th:text="#{myloans.requested}">⏳ 신청됨</span>
+        <span th:if="${loan.isLoaned() and !loan.isOverdue()}" th:text="#{myloans.loaned}">📗 대출 중</span>
+        <span th:if="${loan.isOverdue()}" style="color:#c0392b; font-weight:bold;"
+              th:text="#{myloans.overdue}">📕 연체</span>
+      </td>
+
+      <!-- 대출일: 신청 중이면 아직 없음 -->
+      <td>
+        <span th:if="${loan.isRequested()}">-</span>
+        <span th:unless="${loan.isRequested()}"
+              th:text="${#temporals.format(loan.loanedAt, 'MM.dd')}"></span>
+      </td>
+
+      <!-- 반납 기한 + D-day -->
+      <td>
+        <span th:if="${loan.dueDate == null}">-</span>
+        <span th:unless="${loan.dueDate == null}"
+              th:text="${#temporals.format(loan.dueDate, 'MM.dd')}"></span>
+
+        <span th:if="${loan.dday != null and loan.dday > 0}"
+              th:text="'(D-' + ${loan.dday} + ')'"></span>
+        <span th:if="${loan.dday != null and loan.dday == 0}"
+              style="color:orange; font-weight:bold;">(D-Day)</span>
+        <!-- (연체 3일) / (延滞 3日) -->
+        <span th:if="${loan.isOverdue()}"
+              style="color:red; font-weight:bold;"
+              th:text="'(' + #{myloans.overdueDays} + ' ' + ${loan.dday * -1} + #{myloans.dayUnit} + ')'"></span>
+      </td>
+
+      <!-- 버튼 칸 -->
+      <td>
+        <!-- 대출 신청 취소: 신청 중일 때만 -->
+        <form th:if="${loan.isRequested()}"
+              th:action="@{/mypage/loans/{id}/cancel(id=${loan.id})}" method="post"
+              style="display:inline;">
+          <button type="submit" class="return-btn" style="background:#95a5a6;"
+                  th:data-confirm="#{myloans.cancelConfirm}"
+                  onclick="return confirm(this.dataset.confirm)"
+                  th:text="#{myloans.cancel}">대출 신청 취소</button>
+        </form>
+
+        <!-- 연장: 대출 중 + 연장 안 함 + 연체 아님 -->
+        <form th:if="${loan.isLoaned() and loan.extendCount == 0 and !loan.isOverdue()}"
+              th:action="@{/mypage/loans/{id}/extend(id=${loan.id})}" method="post"
+              style="display:inline;">
+          <button type="submit" class="return-btn" style="background:#3498db;"
+                  th:data-confirm="#{myloans.extendConfirm}"
+                  onclick="return confirm(this.dataset.confirm)"
+                  th:text="#{myloans.extend}">연장</button>
+        </form>
+
+        <!-- 이미 연장했으면 표시 -->
+        <span th:if="${loan.isLoaned() and loan.extendCount >= 1}"
+              style="font-size:12px; color:#888;"
+              th:text="#{myloans.extended}">🔁 연장됨</span>
+
+        <!-- 반납하기: 대출 중일 때만 -->
+        <form th:if="${loan.isLoaned()}"
+              th:action="@{/mypage/loans/{id}/return(id=${loan.id})}" method="post"
+              style="display:inline;">
+          <button type="submit" class="return-btn"
+                  th:data-confirm="#{myloans.returnConfirm}"
+                  onclick="return confirm(this.dataset.confirm)"
+                  th:text="#{myloans.return}">반납하기</button>
+        </form>
+      </td>
+    </tr>
+
+    <tr th:if="${loans.isEmpty()}">
+      <td colspan="6" class="empty" th:text="#{myloans.empty}">빌리고 있는 책이 없습니다.</td>
+    </tr>
+  </table>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

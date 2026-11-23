@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{mypage.pageTitle}">마이페이지 - PZM 도서관</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/mypage.css}">
+</head>
+<body>
+
+<!-- 공통 헤더 -->
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="mypage-wrap">
+
+  <h2 class="page-title" th:text="#{mypage.title}">마이페이지</h2>
+
+  <!-- ===== 내 정보 ===== -->
+  <section class="my-box">
+    <div class="box-head">
+      <h3 th:text="#{mypage.myInfo}">내 정보</h3>
+      <a href="/mypage/edit" class="small-btn" th:text="#{mypage.edit}">정보 수정</a>
+    </div>
+    <dl class="info-list">
+
+      <!-- email -->
+      <div class="info-row">
+        <dt th:text="#{mypage.email}">이메일</dt>
+        <dd th:text="${loginMember.email}"></dd>
+      </div>
+
+      <!-- password_hash: 그대로 보여주지 않고 가림 -->
+      <div class="info-row">
+        <dt th:text="#{mypage.password}">비밀번호</dt>
+        <dd>●●●●●●●●</dd>
+      </div>
+
+      <!-- nickname -->
+      <div class="info-row">
+        <dt th:text="#{mypage.nickname}">닉네임</dt>
+        <dd th:text="${loginMember.nickname}"></dd>
+      </div>
+
+      <!-- role: ADMIN이면 관리자, 아니면 일반회원 -->
+      <div class="info-row">
+        <dt th:text="#{mypage.role}">회원등급</dt>
+        <dd th:text="${loginMember.isAdmin()} ? #{mypage.roleAdmin} : #{mypage.roleUser}"></dd>
+      </div>
+
+      <!-- suspended_until: 없으면 정상 (GlobalAdvice가 DB에서 새로 가져옴) -->
+      <div class="info-row">
+        <dt th:text="#{mypage.suspended}">대출 정지</dt>
+        <dd th:if="${suspendedUntil == null}" th:text="#{mypage.suspendedNone}">없음</dd>
+        <dd th:if="${suspendedUntil != null}"
+            th:text="${#temporals.format(suspendedUntil, 'yyyy.MM.dd')} + #{mypage.suspendedUntil}"
+            style="color:#e74c3c"></dd>
+      </div>
+
+      <!-- created_at -->
+      <div class="info-row">
+        <dt th:text="#{mypage.joinedAt}">가입일</dt>
+        <dd th:text="${#temporals.format(loginMember.createdAt, 'yyyy.MM.dd HH:mm')}"></dd>
+      </div>
+    </dl>
+  </section>
+
+  <!-- ===== 회원탈퇴 ===== -->
+  <section class="my-box">
+    <div class="box-head">
+      <h3 th:text="#{mypage.withdraw}">회원탈퇴</h3>
+    </div>
+
+    <!-- 실패 메시지 (비밀번호 틀림, 대출 중) → 6단계에서 다국어 -->
+    <p th:if="${withdrawError}" th:text="${withdrawError}" style="color:#e74c3c; margin-bottom:10px;"></p>
+
+    <details>
+      <summary style="cursor:pointer; color:#888;" th:text="#{mypage.withdrawOpen}">탈퇴하기</summary>
+      <p style="margin:12px 0; color:#555; font-size:14px; line-height:1.6;">
+        <span th:text="#{mypage.withdrawNotice1}">탈퇴하면 계정 정보는 삭제되고 다시 로그인할 수 없습니다.</span><br>
+        <span th:text="#{mypage.withdrawNotice2}">작성한 게시글과 댓글은 삭제되지 않고 "(탈퇴한 회원)"으로 표시됩니다.</span>
+      </p>
+      <form action="/mypage/withdraw" method="post"
+            th:data-confirm="#{mypage.withdrawConfirm}"
+            onsubmit="return confirm(this.dataset.confirm);">
+        <input type="password" name="password" th:placeholder="#{mypage.withdrawPassword}" required
+               style="padding:8px; border:1px solid #ccc; border-radius:6px;">
+        <button type="submit"
+                style="padding:8px 16px; background:#e74c3c; color:#fff; border:none; border-radius:6px; cursor:pointer;"
+                th:text="#{mypage.withdrawBtn}">탈퇴</button>
+      </form>
+    </details>
+  </section>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

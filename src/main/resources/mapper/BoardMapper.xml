@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.BoardMapper">
+
+    <!-- ===== 글쓰기 ===== -->
+
+    <!-- 글 저장 (저장 후 생성된 번호를 post.id에 넣어줌) -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO posts (member_id, board, title, content)
+        VALUES (#{memberId}, #{board}, #{title}, #{content})
+    </insert>
+
+    <!-- 이미지 기록 저장 -->
+    <insert id="insertImage">
+        INSERT INTO post_images (post_id, file_path)
+        VALUES (#{postId}, #{filePath})
+    </insert>
+
+    <!-- ===== 목록 ===== -->
+
+    <!-- 한 페이지(10개) + 검색 -->
+    <select id="findPage" resultType="com.example.demo.entity.Post">
+        SELECT posts.*, members.nickname
+        FROM posts
+        JOIN members ON posts.member_id = members.id
+        <choose>
+            <when test="type == 'title'">
+                WHERE posts.title LIKE CONCAT('%', #{keyword}, '%')
+            </when>
+            <when test="type == 'writer'">
+                WHERE members.nickname LIKE CONCAT('%', #{keyword}, '%')
+            </when>
+            <otherwise>
+                WHERE posts.title LIKE CONCAT('%', #{keyword}, '%')
+                OR posts.content LIKE CONCAT('%', #{keyword}, '%')
+            </otherwise>
+        </choose>
+        ORDER BY posts.board = 'NOTICE' DESC, posts.id DESC
+        LIMIT 10 OFFSET #{offset}
+    </select>
+
+    <!-- 전체 개수 + 검색 (페이지 수 계산용) -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*)
+        FROM posts
+        JOIN members ON posts.member_id = members.id
+        <choose>
+            <when test="type == 'title'">
+                WHERE posts.title LIKE CONCAT('%', #{keyword}, '%')
+            </when>
+            <when test="type == 'writer'">
+                WHERE members.nickname LIKE CONCAT('%', #{keyword}, '%')
+            </when>
+            <otherwise>
+                WHERE posts.title LIKE CONCAT('%', #{keyword}, '%')
+                OR posts.content LIKE CONCAT('%', #{keyword}, '%')
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 내가 쓴 글 -->
+    <select id="findByMemberId" resultType="com.example.demo.entity.Post">
+        SELECT posts.*, members.nickname
+        FROM posts
+        JOIN members ON posts.member_id = members.id
+        WHERE posts.member_id = #{memberId}
+        ORDER BY posts.id DESC
+    </select>
+
+    <!-- ===== 상세 ===== -->
+
+    <!-- 글 하나 -->
+    <select id="findById" resultType="com.example.demo.entity.Post">
+        SELECT posts.*, members.nickname
+        FROM posts
+        JOIN members ON posts.member_id = members.id
+        WHERE posts.id = #{id}
+    </select>
+
+    <!-- 이 글의 이미지 파일 이름들 -->
+    <select id="findImages" resultType="String">
+        SELECT file_path FROM post_images WHERE post_id = #{postId} ORDER BY id
+    </select>
+    <!-- 수정 화면용: 이미지 번호 + 경로 같이 (체크박스로 지우려고) -->
+    <select id="findImageList" resultType="com.example.demo.entity.PostImage">
+        SELECT id, post_id, file_path
+        FROM post_images
+        WHERE post_id = #{postId}
+        ORDER BY id
+    </select>
+
+    <!-- 이미지 1개 지우기 (이 글의 이미지일 때만) -->
+    <delete id="deleteImage">
+        DELETE FROM post_images
+        WHERE id = #{imageId}
+        AND post_id = #{postId}
+    </delete>
+    <!-- ===== 조회수 ===== -->
+
+    <!-- 오늘 이 사람이 이 글을 본 기록 개수 -->
+    <select id="countView" resultType="int">
+        SELECT COUNT(*)
+        FROM post_views
+        WHERE post_id = #{postId}
+        AND viewer = #{viewer}
+        AND view_date = CURDATE()
+    </select>
+
+    <!-- 장부에 기록 -->
+    <insert id="insertView">
+        INSERT INTO post_views (post_id, viewer, view_date)
+        VALUES (#{postId}, #{viewer}, CURDATE())
+    </insert>
+
+    <!-- 조회수 +1 -->
+    <update id="increaseViewCount">
+        UPDATE posts SET view_count = view_count + 1 WHERE id = #{id}
+    </update>
+
+    <!-- ===== 수정 / 삭제 ===== -->
+
+    <update id="update">
+        UPDATE posts
+        SET title = #{title},
+        content = #{content}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM posts WHERE id = #{id}
+    </delete>
+
+</mapper>
