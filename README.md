@@ -3,6 +3,20 @@
 図書の **貸出管理・掲示板・チャット問い合わせ** をひとつにまとめた図書館 Web アプリです。
 画面・通知は **日本語 / 韓国語** に対応しています。
 
+| メイン |
+| <img width="1911" height="910" alt="image" src="https://github.com/user-attachments/assets/73596d3d-d864-4114-b31e-0b1abc3af3fb" />
+
+
+| 貸出状況 | 管理者ダッシュボード |
+| (내 대출 캡처) | (대시보드 캡처) |
+<img width="1916" height="518" alt="image" src="https://github.com/user-attachments/assets/120f11eb-6b12-424c-8241-41a9dea4b394" />
+<img width="1905" height="674" alt="image" src="https://github.com/user-attachments/assets/b514fd34-f1c7-4ba7-86bc-21f3f5889621" />
+
+| チャット（通知） |
+<img width="1572" height="488" alt="image" src="https://github.com/user-attachments/assets/f5c72237-f319-4261-a60a-e582e8bfed0a" />
+<img width="421" height="395" alt="image" src="https://github.com/user-attachments/assets/c628e99c-3c38-421e-af84-02408d960031" />
+
+
 ## 🔑 テストアカウント
 
 | 区分 | メールアドレス | パスワード |
@@ -59,6 +73,10 @@
 ### REST API
 - 図書・貸出・掲示板の API（掲示板は GET / POST / PUT / DELETE、ステータスコードを使い分け）
 
+## 🗂 ER 図
+
+<img width="1008" alt="ER図" src="https://github.com/user-attachments/assets/6f90798f-8666-4725-ac49-5535eba34ae3" />
+
 ## 💡 設計で工夫した点
 
 ### 1. 「本」と「所蔵本」を分離
@@ -80,3 +98,6 @@
 ### 5. 役割ごとにクラスを分離
 - `NotificationService`（通知の文章を作る）と `MessageService`（保存・取得）を分離
 - スケジューラー（いつ）/ Mapper（誰に）/ NotificationService（何を）に役割を分けています
+
+
+
