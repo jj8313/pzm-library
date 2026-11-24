@@ -1,19 +1,16 @@
-# 📚 PZM図書館（pzm-library）
-
-図書の **貸出管理・掲示板・チャット問い合わせ** をひとつにまとめた図書館 Web アプリです。
-画面・通知は **日本語 / 韓国語** に対応しています。
-
 ## 📸 画面
 
 ### メイン
 <img width="800" alt="メイン画面" src="https://github.com/user-attachments/assets/73596d3d-d864-4114-b31e-0b1abc3af3fb" />
 
 ### 管理者
-| 会員詳細（貸出状況） | ダッシュボード |
-| <img width="420" alt="管理者ダッシュボード" src="https://github.com/user-attachments/assets/b514fd34-f1c7-4ba7-86bc-21f3f5889621" /> | <img width="420" alt="会員詳細" src="https://github.com/user-attachments/assets/120f11eb-6b12-424c-8241-41a9dea4b394" /> |
+| ダッシュボード | 会員詳細（貸出状況） |
+|---|---|
+| <img width="420" alt="管理者ダッシュボード" src="https://github.com/user-attachments/assets/120f11eb-6b12-424c-8241-41a9dea4b394" /> | <img width="420" alt="会員詳細" src="https://github.com/user-attachments/assets/b514fd34-f1c7-4ba7-86bc-21f3f5889621" /> |
 
 ### チャット・通知
 | お問い合わせ一覧（管理者） | チャット画面 |
+|---|---|
 | <img width="480" alt="お問い合わせ一覧" src="https://github.com/user-attachments/assets/f5c72237-f319-4261-a60a-e582e8bfed0a" /> | <img width="260" alt="チャット画面" src="https://github.com/user-attachments/assets/c628e99c-3c38-421e-af84-02408d960031" /> |
 
 ## 🌐 デモ
