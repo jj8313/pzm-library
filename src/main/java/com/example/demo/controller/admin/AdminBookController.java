@@ -1,5 +1,6 @@
 package com.example.demo.controller.admin;
 
+import com.example.demo.config.I18n;
 import com.example.demo.entity.Book;
 import com.example.demo.entity.Member;
 import com.example.demo.service.BookService;
@@ -20,15 +21,18 @@ public class AdminBookController {
     private final BookService bookService;
     private final LoanService loanService;
     private final LostBookService lostBookService;
+    private final I18n i18n;   // 결과 메시지를 화면 언어로
 
     public AdminBookController(KakaoBookService kakaoBookService,
                                BookService bookService,
                                LoanService loanService,
-                               LostBookService lostBookService) {
+                               LostBookService lostBookService,
+                               I18n i18n) {
         this.kakaoBookService = kakaoBookService;
         this.bookService = bookService;
         this.loanService = loanService;
         this.lostBookService = lostBookService;
+        this.i18n = i18n;
     }
 
     // 카카오 검색 + 등록 화면:  GET /admin/books?query=자바&page=2
@@ -62,7 +66,8 @@ public class AdminBookController {
 
         ra.addAttribute("query", query);
         ra.addAttribute("page", page);
-        ra.addFlashAttribute("message", "「" + book.getTitle() + "」 " + quantity + "권 등록 완료!");
+        // 「자바의 정석」 2권 등록 완료! ({0}=제목, {1}=권수)
+        ra.addFlashAttribute("message", i18n.get("admin.msg.registered", book.getTitle(), quantity));
         return "redirect:/admin/books";
     }
 
@@ -123,13 +128,13 @@ public class AdminBookController {
         String result = lostBookService.markLost(copyId, reason);
 
         if (result.equals("OK")) {
-            ra.addFlashAttribute("message", "분실 처리되었습니다.");
+            ra.addFlashAttribute("message", i18n.get("admin.msg.lostDone"));
         } else if (result.equals("RESERVED")) {
-            ra.addFlashAttribute("message", "대출 신청 중인 책입니다. 승인하거나 취소된 뒤에 처리해 주세요.");
+            ra.addFlashAttribute("message", i18n.get("admin.msg.lostReserved"));
         } else if (result.equals("ALREADY")) {
-            ra.addFlashAttribute("message", "이미 분실 처리된 책입니다.");
+            ra.addFlashAttribute("message", i18n.get("admin.msg.lostAlready"));
         } else {
-            ra.addFlashAttribute("message", "없는 책입니다.");
+            ra.addFlashAttribute("message", i18n.get("admin.msg.lostNone"));
         }
         return "redirect:/admin/books/" + bookId + "/loans";
     }

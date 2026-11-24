@@ -14,6 +14,10 @@ public class MemberService {
     private final LoanMapper loanMapper;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    // 비밀번호 규칙: 영문 + 숫자 + 특수문자, 8~16자 (회원가입 화면과 같음)
+    private static final String PASSWORD_RULE =
+            "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,16}$";
+
     public MemberService(MemberMapper memberMapper, LoanMapper loanMapper) {
         this.memberMapper = memberMapper;
         this.loanMapper = loanMapper;
@@ -30,10 +34,11 @@ public class MemberService {
     }
 
     // 로그인: 입력한 비밀번호와 DB 해시를 matches로 비교
+    // 에러는 문장 대신 "키"를 던짐 → Controller가 i18n.get()으로 번역
     public Member login(String email, String password) {
         Member member = memberMapper.findByEmail(email);
         if (member == null || !passwordEncoder.matches(password, member.getPasswordHash())) {
-            throw new IllegalArgumentException("이메일 또는 비밀번호가 틀렸습니다.");
+            throw new IllegalArgumentException("member.error.loginFail");
         }
         return member;
     }
@@ -41,13 +46,13 @@ public class MemberService {
     // 회원가입
     public void join(Member member) {
         if (memberMapper.findByEmail(member.getEmail()) != null) {
-            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+            throw new IllegalArgumentException("member.error.emailTaken");
         }
         if (memberMapper.findByNickname(member.getNickname()) != null) {
-            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+            throw new IllegalArgumentException("member.error.nicknameTaken");
         }
         if (member.getNickname().startsWith("탈퇴회원")) {
-            throw new IllegalArgumentException("사용할 수 없는 닉네임입니다.");
+            throw new IllegalArgumentException("member.error.nicknameBanned");
         }
         // 비밀번호를 BCrypt로 섞어서 저장
         member.setPasswordHash(passwordEncoder.encode(member.getPasswordHash()));
@@ -58,7 +63,7 @@ public class MemberService {
     public Member findById(Long id) {
         Member member = memberMapper.findById(id);
         if (member == null) {
-            throw new IllegalArgumentException("회원이 없습니다.");
+            throw new IllegalArgumentException("member.error.notFound");
         }
         return member;
     }
@@ -72,18 +77,21 @@ public class MemberService {
         // ① 그 닉네임을 다른 사람이 쓰고 있으면 막기 (나면 괜찮음)
         Member sameNickname = memberMapper.findByNickname(nickname);
         if (sameNickname != null && !sameNickname.getId().equals(id)) {
-            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+            throw new IllegalArgumentException("member.error.nicknameTaken");
         }
         if (nickname.startsWith("탈퇴회원")) {
-            throw new IllegalArgumentException("사용할 수 없는 닉네임입니다.");
+            throw new IllegalArgumentException("member.error.nicknameBanned");
         }
 
         // ② 내 정보 가져와서 닉네임 바꾸기
         Member member = findById(id);
         member.setNickname(nickname);
 
-        // ③ 새 비밀번호를 입력했을 때만 바꾸기
+        // ③ 새 비밀번호를 입력했을 때만 바꾸기 (규칙 검사)
         if (newPassword != null && !newPassword.isBlank()) {
+            if (!newPassword.matches(PASSWORD_RULE)) {
+                throw new IllegalArgumentException("member.error.passwordRule");
+            }
             member.setPasswordHash(passwordEncoder.encode(newPassword));
         }
 
@@ -97,12 +105,12 @@ public class MemberService {
 
         // ① 비밀번호 확인 (BCrypt)
         if (!passwordEncoder.matches(password, member.getPasswordHash())) {
-            throw new IllegalArgumentException("비밀번호가 틀렸습니다.");
+            throw new IllegalArgumentException("member.error.wrongPassword");
         }
 
         // ② 빌리고 있거나 신청 중인 책이 있으면 막기
         if (loanMapper.countActive(id) > 0) {
-            throw new IllegalArgumentException("대출 중이거나 신청한 책이 있습니다. 모두 반납한 후 탈퇴해 주세요.");
+            throw new IllegalArgumentException("member.error.hasLoans");
         }
 
         // ③ 개인정보만 지우기 (익명화)

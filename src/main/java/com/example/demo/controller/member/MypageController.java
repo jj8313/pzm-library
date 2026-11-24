@@ -1,5 +1,6 @@
 package com.example.demo.controller.member;
 
+import com.example.demo.config.I18n;
 import com.example.demo.entity.Member;
 import com.example.demo.service.MemberService;
 import jakarta.servlet.http.HttpSession;
@@ -14,9 +15,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class MypageController {
 
     private final MemberService memberService;
+    private final I18n i18n;   // 에러 키 → 화면 언어 문장
 
-    public MypageController(MemberService memberService) {
+    public MypageController(MemberService memberService, I18n i18n) {
         this.memberService = memberService;
+        this.i18n = i18n;
     }
 
     // 마이페이지 화면
@@ -54,15 +57,15 @@ public class MypageController {
 
         // ② 비밀번호 두 칸이 다르면 막기
         if (!newPassword.equals(newPasswordConfirm)) {
-            model.addAttribute("error", "비밀번호가 서로 다릅니다.");
+            model.addAttribute("error", i18n.get("member.error.passwordMismatch"));
             return "mypage/mypageedit";
         }
 
-        // ③ 서비스에 수정 맡기기 (닉네임 중복, 비밀번호 규칙 위반이면 예외가 날아옴)
+        // ③ 서비스에 수정 맡기기 (닉네임 중복, 비밀번호 규칙 위반이면 예외의 키가 날아옴)
         try {
             memberService.updateInfo(loginMember.getId(), nickname, newPassword);
         } catch (IllegalArgumentException e) {
-            model.addAttribute("error", e.getMessage());
+            model.addAttribute("error", i18n.get(e.getMessage()));
             return "mypage/mypageedit";
         }
 
@@ -87,7 +90,7 @@ public class MypageController {
         try {
             memberService.withdraw(loginMember.getId(), password);
         } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("withdrawError", e.getMessage());   // 비밀번호 틀림, 대출 중
+            ra.addFlashAttribute("withdrawError", i18n.get(e.getMessage()));   // 비밀번호 틀림, 대출 중
             return "redirect:/mypage";
         }
 

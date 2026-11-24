@@ -1,5 +1,6 @@
 package com.example.demo.controller.loan;
 
+import com.example.demo.config.I18n;
 import com.example.demo.entity.Member;
 import com.example.demo.service.LoanService;
 import jakarta.servlet.http.HttpSession;
@@ -15,9 +16,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class LoanController {
 
     private final LoanService loanService;
+    private final I18n i18n;   // 결과 메시지를 화면 언어로
 
-    public LoanController(LoanService loanService) {
+    public LoanController(LoanService loanService, I18n i18n) {
         this.loanService = loanService;
+        this.i18n = i18n;
     }
 
     // 내 대출 목록:  GET /mypage/loans
@@ -50,9 +53,9 @@ public class LoanController {
         boolean ok = loanService.memberReturn(id, loginMember.getId());
 
         if (ok) {
-            ra.addFlashAttribute("message", "반납이 완료되었습니다. 이용해 주셔서 감사합니다!");
+            ra.addFlashAttribute("message", i18n.get("loan.msg.returned"));
         } else {
-            ra.addFlashAttribute("message", "반납할 수 없는 대출입니다.");
+            ra.addFlashAttribute("message", i18n.get("loan.msg.returnFail"));
         }
         return "redirect:/mypage/loans";
     }
@@ -67,13 +70,13 @@ public class LoanController {
         String result = loanService.extend(id, loginMember.getId());
 
         if (result.equals("OK")) {
-            ra.addFlashAttribute("message", "반납 기한이 7일 연장되었습니다.");
+            ra.addFlashAttribute("message", i18n.get("loan.msg.extended"));
         } else if (result.equals("OVERDUE")) {
-            ra.addFlashAttribute("message", "반납 기한이 지난 책은 연장할 수 없습니다.");
+            ra.addFlashAttribute("message", i18n.get("loan.msg.extendOverdue"));
         } else if (result.equals("ALREADY")) {
-            ra.addFlashAttribute("message", "연장은 1번만 가능합니다.");
+            ra.addFlashAttribute("message", i18n.get("loan.msg.extendAlready"));
         } else {
-            ra.addFlashAttribute("message", "연장할 수 없는 대출입니다.");
+            ra.addFlashAttribute("message", i18n.get("loan.msg.extendFail"));
         }
         return "redirect:/mypage/loans";
     }
@@ -88,9 +91,9 @@ public class LoanController {
         boolean ok = loanService.cancelRequest(id, loginMember.getId());
 
         if (ok) {
-            ra.addFlashAttribute("message", "대출 신청이 취소되었습니다.");
+            ra.addFlashAttribute("message", i18n.get("loan.msg.canceled"));
         } else {
-            ra.addFlashAttribute("message", "이미 승인되었거나 취소할 수 없는 신청입니다.");
+            ra.addFlashAttribute("message", i18n.get("loan.msg.cancelFail"));
         }
         return "redirect:/mypage/loans";
     }

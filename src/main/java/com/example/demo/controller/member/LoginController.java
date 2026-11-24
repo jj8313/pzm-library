@@ -1,5 +1,6 @@
 package com.example.demo.controller.member;
 
+import com.example.demo.config.I18n;
 import com.example.demo.entity.Member;
 import com.example.demo.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +22,7 @@ public class LoginController {
 
     private final MemberService memberService;
     private final LocaleResolver localeResolver;   // 화면 언어 바꾸기 (WebConfig에서 만든 것)
+    private final I18n i18n;                       // 에러 키 → 화면 언어 문장
 
     // 로그인 화면
     @GetMapping("/loginpage")
@@ -39,7 +41,7 @@ public class LoginController {
         try {
             member = memberService.login(email, password);
         } catch (IllegalArgumentException e) {
-            model.addAttribute("error", e.getMessage());
+            model.addAttribute("error", i18n.get(e.getMessage()));   // 키 → 번역
             return "members/loginpage";
         }
 

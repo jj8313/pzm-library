@@ -1,5 +1,6 @@
 package com.example.demo.controller.admin;
 
+import com.example.demo.config.I18n;
 import com.example.demo.entity.Member;
 import com.example.demo.service.LoanService;
 import com.example.demo.service.LostBookService;
@@ -20,10 +21,12 @@ public class AdminLoanController {
 
     private final LoanService loanService;
     private final LostBookService lostBookService;
+    private final I18n i18n;   // 결과 메시지를 화면 언어로
 
-    public AdminLoanController(LoanService loanService, LostBookService lostBookService) {
+    public AdminLoanController(LoanService loanService, LostBookService lostBookService, I18n i18n) {
         this.loanService = loanService;
         this.lostBookService = lostBookService;
+        this.i18n = i18n;
     }
 
     // 대출 관리 화면:  GET /admin/loans
@@ -51,9 +54,9 @@ public class AdminLoanController {
         boolean ok = loanService.approve(id);
 
         if (ok) {
-            ra.addFlashAttribute("message", "승인 완료! 반납 기한은 14일 뒤입니다.");
+            ra.addFlashAttribute("message", i18n.get("admin.msg.approved"));
         } else {
-            ra.addFlashAttribute("message", "이미 처리된 신청이거나 없는 신청입니다.");
+            ra.addFlashAttribute("message", i18n.get("admin.msg.approveFail"));
         }
         return "redirect:/admin/loans";
     }
@@ -70,9 +73,9 @@ public class AdminLoanController {
         String result = lostBookService.markLost(copyId, reason);
 
         if (result.equals("OK")) {
-            ra.addFlashAttribute("message", "분실 처리되었습니다. 회원에게 알림을 보냈습니다.");
+            ra.addFlashAttribute("message", i18n.get("admin.msg.lostDoneNotify"));
         } else {
-            ra.addFlashAttribute("message", "분실 처리할 수 없는 책입니다.");
+            ra.addFlashAttribute("message", i18n.get("admin.msg.lostFail"));
         }
         return "redirect:/admin/loans";
     }

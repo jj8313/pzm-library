@@ -1,5 +1,6 @@
 package com.example.demo.controller.book;
 
+import com.example.demo.config.I18n;
 import com.example.demo.entity.Book;
 import com.example.demo.entity.Member;
 import com.example.demo.service.BookService;
@@ -18,10 +19,12 @@ public class BookController {
 
     private final BookService bookService;
     private final LoanService loanService;
+    private final I18n i18n;   // 결과 메시지를 화면 언어로
 
-    public BookController(BookService bookService, LoanService loanService) {
+    public BookController(BookService bookService, LoanService loanService, I18n i18n) {
         this.bookService = bookService;
         this.loanService = loanService;
+        this.i18n = i18n;
     }
 
     // 회원용 도서 목록 + 검색 + 페이징 (로그인 안 해도 볼 수 있음)
@@ -66,19 +69,19 @@ public class BookController {
         // 신청 결과: "OK" / "SUSPENDED" / "OVERDUE" / "LIMIT" / "DUPLICATE" / "NO_BOOK"
         String result = loanService.requestLoan(loginMember.getId(), id);
 
-        // 결과별로 다른 메시지
+        // 결과별로 다른 메시지 (화면 언어로)
         if (result.equals("OK")) {
-            ra.addFlashAttribute("message", "대출 신청이 완료되었습니다. 도서관에서 책을 받아가세요!");
+            ra.addFlashAttribute("message", i18n.get("loan.msg.requested"));
         } else if (result.equals("SUSPENDED")) {
-            ra.addFlashAttribute("message", "연체로 인해 대출이 정지된 상태입니다. 정지 기간이 끝난 후 신청해 주세요.");
+            ra.addFlashAttribute("message", i18n.get("loan.msg.suspended"));
         } else if (result.equals("OVERDUE")) {
-            ra.addFlashAttribute("message", "반납 기한이 지난 책이 있습니다. 먼저 반납해 주세요.");
+            ra.addFlashAttribute("message", i18n.get("loan.msg.hasOverdue"));
         } else if (result.equals("LIMIT")) {
-            ra.addFlashAttribute("message", "최대 5권까지 빌릴 수 있습니다. 반납 후 신청해 주세요.");
+            ra.addFlashAttribute("message", i18n.get("loan.msg.limit"));
         } else if (result.equals("DUPLICATE")) {
-            ra.addFlashAttribute("message", "이미 신청했거나 빌리고 있는 책입니다.");
+            ra.addFlashAttribute("message", i18n.get("loan.msg.duplicate"));
         } else {
-            ra.addFlashAttribute("message", "지금은 대출 가능한 책이 없습니다.");
+            ra.addFlashAttribute("message", i18n.get("loan.msg.noBook"));
         }
 
         return "redirect:/books/" + id;   // 다시 그 책 상세로

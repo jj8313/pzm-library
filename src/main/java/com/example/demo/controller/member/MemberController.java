@@ -1,5 +1,6 @@
 package com.example.demo.controller.member;
 
+import com.example.demo.config.I18n;
 import com.example.demo.entity.Member;
 import com.example.demo.service.MailService;
 import com.example.demo.service.MemberService;
@@ -14,10 +15,16 @@ public class MemberController {
 
     private final MemberService memberService;
     private final MailService mailService;
+    private final I18n i18n;   // 에러 키 → 화면 언어 문장
 
-    public MemberController(MemberService memberService, MailService mailService) {
+    // 비밀번호 규칙: 영문 + 숫자 + 특수문자, 8~16자
+    private static final String PASSWORD_RULE =
+            "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,16}$";
+
+    public MemberController(MemberService memberService, MailService mailService, I18n i18n) {
         this.memberService = memberService;
         this.mailService = mailService;
+        this.i18n = i18n;
     }
 
     // 회원가입 화면
@@ -27,12 +34,12 @@ public class MemberController {
     }
 
     // 인증코드 메일 보내기
-    // JS: fetch("/members/email/send")
+    // JS: fetch("/members/email/send") → "OK" 또는 에러 문구(화면 언어)를 돌려줌
     @PostMapping("/email/send")
     @ResponseBody
     public String sendCode(@RequestParam String email, HttpSession session) {
         if (memberService.isEmailExists(email)) {
-            return "이미 가입된 이메일입니다.";
+            return i18n.get("member.error.emailTaken");
         }
         try {
             String code = mailService.sendCode(email);
@@ -41,7 +48,7 @@ public class MemberController {
             return "OK";
         } catch (Exception e) {
             e.printStackTrace();
-            return "메일 발송에 실패했습니다. 이메일 주소를 확인해 주세요.";
+            return i18n.get("member.error.mailFail");
         }
     }
 
@@ -60,7 +67,7 @@ public class MemberController {
             session.removeAttribute("emailCode");
             return "OK";
         }
-        return "인증코드가 일치하지 않습니다.";
+        return i18n.get("member.error.codeMismatch");
     }
 
     // 닉네임 중복 확인 (fetch가 부름 → 화면 대신 true/false를 돌려줌)
@@ -76,20 +83,23 @@ public class MemberController {
     public String join(Member member, HttpSession session, Model model) {
         String verifiedEmail = (String) session.getAttribute("verifiedEmail");
 
+        // ① 이메일 인증 했는지
         if (verifiedEmail == null || !verifiedEmail.equals(member.getEmail())) {
-            model.addAttribute("error", "이메일 인증을 완료해 주세요.");
+            model.addAttribute("error", i18n.get("member.error.needVerify"));
             return "members/join";
         }
 
-        if (!member.getPasswordHash().matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,16}$")) {
-            model.addAttribute("error", "비밀번호는 영문, 숫자, 특수문자를 포함해 8~16자로 입력해 주세요.");
+        // ② 비밀번호 규칙
+        if (!member.getPasswordHash().matches(PASSWORD_RULE)) {
+            model.addAttribute("error", i18n.get("member.error.passwordRule"));
             return "members/join";
         }
 
+        // ③ 가입 (이메일·닉네임 중복이면 예외의 키가 날아옴)
         try {
             memberService.join(member);
         } catch (IllegalArgumentException e) {
-            model.addAttribute("error", e.getMessage());
+            model.addAttribute("error", i18n.get(e.getMessage()));
             return "members/join";
         }
 
