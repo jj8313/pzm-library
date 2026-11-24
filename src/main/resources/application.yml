@@ -10,7 +10,7 @@ spring:
     name: demo
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/pratice_library?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useSSL=false
+    url: jdbc:mysql://localhost:3306/pratice_library?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: ${DB_PASSWORD}
   mail:
