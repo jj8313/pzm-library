@@ -4,6 +4,7 @@ import com.example.demo.entity.Member;
 import com.example.demo.entity.Post;
 import com.example.demo.entity.PostImage;
 import com.example.demo.mapper.BoardMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,12 +17,15 @@ import java.util.UUID;
 @Service
 public class BoardService {
 
-    private static final String UPLOAD_DIR = "C:/pzm-upload/";
+    // 업로드 폴더 경로 (yml의 upload.dir 값)
+    private final String uploadDir;
 
     private final BoardMapper boardMapper;
 
-    public BoardService(BoardMapper boardMapper) {
+    public BoardService(BoardMapper boardMapper,
+                        @Value("${upload.dir}") String uploadDir) {
         this.boardMapper = boardMapper;
+        this.uploadDir = uploadDir;
     }
 
     // ===== 글쓰기 =====
@@ -33,13 +37,13 @@ public class BoardService {
 
         if (images == null) return;
 
-        new File(UPLOAD_DIR).mkdirs();
+        new File(uploadDir).mkdirs();
 
         for (MultipartFile image : images) {
             if (image.isEmpty()) continue;   // 빈 칸은 건너뜀
 
             String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
-            image.transferTo(new File(UPLOAD_DIR + fileName));
+            image.transferTo(new File(uploadDir + fileName));
             boardMapper.insertImage(post.getId(), fileName);
         }
     }
@@ -75,7 +79,7 @@ public class BoardService {
         return boardMapper.findImages(postId);
     }
 
-    // ← 추가: 수정 화면용 (번호 + 파일 이름)
+    // 수정 화면용 (번호 + 파일 이름)
     public List<PostImage> findImageList(Long postId) {
         return boardMapper.findImageList(postId);
     }
@@ -93,7 +97,6 @@ public class BoardService {
 
     // ===== 수정 / 삭제 =====
 
-    // ← 수정: 글 수정 + 체크한 이미지 삭제 (본인 글일 때만)
     // 글 수정 + 체크한 이미지 삭제 (본인 글일 때만)
     @Transactional
     public void update(Post form, Long loginMemberId, List<Long> deleteImageIds) {
@@ -114,7 +117,7 @@ public class BoardService {
             for (PostImage image : images) {
                 if (deleteImageIds.contains(image.getId())) {               // 체크한 이미지면
                     boardMapper.deleteImage(image.getId(), form.getId());   // DB 기록 삭제
-                    new File(UPLOAD_DIR + image.getFilePath()).delete();     // 실제 파일 삭제
+                    new File(uploadDir + image.getFilePath()).delete();      // 실제 파일 삭제
                 }
             }
         }

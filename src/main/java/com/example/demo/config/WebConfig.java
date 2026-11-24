@@ -1,5 +1,8 @@
 package com.example.demo.config;
 
+import java.util.Locale;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.LocaleResolver;
@@ -9,11 +12,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
-import java.util.Locale;
-
-// 웹 설정: 업로드 이미지 경로 + 다국어 (한국어 / 日本語)
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
+    // 업로드 폴더 경로 (yml의 upload.dir 값)
+    @Value("${upload.dir}")
+    private String uploadDir;
 
     private final LangSaveInterceptor langSaveInterceptor;
 
@@ -21,14 +25,14 @@ public class WebConfig implements WebMvcConfigurer {
         this.langSaveInterceptor = langSaveInterceptor;
     }
 
-    // ① /upload/** 주소로 업로드 폴더의 이미지 보여 주기
+    // /upload/** 주소로 업로드 폴더의 이미지 보여 주기
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/upload/**")
-                .addResourceLocations("file:///C:/pzm-upload/");
+                .addResourceLocations("file:" + uploadDir);
     }
 
-    // ② 고른 언어를 세션에 기억 (처음엔 한국어)
+    // 언어를 세션에 기억 (처음엔 한국어)
     @Bean
     public LocaleResolver localeResolver() {
         SessionLocaleResolver resolver = new SessionLocaleResolver();
@@ -36,15 +40,12 @@ public class WebConfig implements WebMvcConfigurer {
         return resolver;
     }
 
-    // ③ 인터셉터 등록 (위에서부터 순서대로 실행)
+    // ?lang=ko / ?lang=ja 로 언어 바꾸기 + 로그인 회원이면 DB에 저장
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // 주소에 ?lang=ja 가 붙으면 화면 언어 바꾸기
         LocaleChangeInterceptor localeChange = new LocaleChangeInterceptor();
         localeChange.setParamName("lang");
         registry.addInterceptor(localeChange);
-
-        // 로그인 중이면 그 언어를 DB(members.lang)에도 저장
         registry.addInterceptor(langSaveInterceptor);
     }
 }
